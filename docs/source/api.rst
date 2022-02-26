@@ -21,9 +21,9 @@ all supported instrument combinations.
 
 .. autofunction:: wivern_chilbolton_utils.convert_camra_ts_l0a2l0b
 
-.. autofunction:: instruments.rpg2nc
+.. autofunction:: wivern_chilbolton_utils.convert_camra_ts_l0b2l1
 
-.. autofunction:: instruments.basta2nc
+.. autofunction:: wivern_chilbolton_utils.convert_galileo_ts_l0b2l1
 
 .. autofunction:: instruments.ceilo2nc
 
