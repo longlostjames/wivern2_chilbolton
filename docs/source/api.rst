@@ -19,7 +19,7 @@ containing harmonized units and other metadata. This initial processing step
 is necessary to ensure that the subsequent processing steps work with
 all supported instrument combinations.
 
-.. autofunction:: instruments.mira2nc
+.. autofunction:: wivern_chilbolton_utils.convert_camra_ts_l0a2l0b
 
 .. autofunction:: instruments.rpg2nc
 
@@ -231,4 +231,3 @@ output
 
 .. automodule:: output
    :members:
-

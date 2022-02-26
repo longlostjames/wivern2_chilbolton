@@ -2,16 +2,16 @@
 # coding: utf-8
 
 # ==========================================================================
-# Module for processing raw radar data from CAMRa (3GHz), Copernicus (35GHz) 
-# and Galileo (94GHz) radars at Chilbolton, collected as part of the 
+# Module for processing raw radar data from CAMRa (3GHz), Copernicus (35GHz)
+# and Galileo (94GHz) radars at Chilbolton, collected as part of the
 # ESA WIVERN-2 project in 2020-2021.
-# Author: Chris Walden, UK Research & Innovation and 
+# Author: Chris Walden, UK Research & Innovation and
 #                       National Centre for Atmospheric Science
 # Last modified: 04-02-2022
 # ==========================================================================
 
 """Module for processing raw radar data from CAMRa (3GHz), Copernicus (35GHz)
-and Galieo (94GHz) radars at Chilbolton, collected as part of the 
+and Galieo (94GHz) radars at Chilbolton, collected as part of the
 ESA WIVERN-2 project in 2020-2021."""
 
 module_version = 1.0;
@@ -45,27 +45,27 @@ import cmocean
 # ===================
 
 def convert_camra_ts_l0a2l0b(infile,outfile):
-    
+
     """This routine converts raw (Level 0a) time series data from the Chilbolton Advanced Meteorological Radar (CAMRa) to Level 0b data.
     Processing involves removing redundant dimensions, and removing bias from the ADC samples of transmit and receive I and Q.
-    Single estimates of I and Q for each transmit pulse are produced and stored in the output file.  
+    Single estimates of I and Q for each transmit pulse are produced and stored in the output file.
     Metadata are added specific to the WIVERN-2 project ground-based observations collected in 2020-2021.
-    
+
     :param infile: Full path of NetCDF Level 0a raw data file, e.g. `<path-to-file>/radar-camra_20201210212823_fix-ts.nc`
     :type infile: str
-    
+
     :param outfile: Full path of NetCDF Level 0b output file, e.g. `<path-to-file>/ncas-radar-camra-1_cao_20201210-212823_fix-ts_l0b_v1.0.nc`
     :type outfile: str
     """
-    
-    DSin = nc4.Dataset(infile);    
-    
+
+    DSin = nc4.Dataset(infile);
+
     dt_start = cftime.num2pydate(DSin['time'][0],DSin['time'].units)
     dt_end   = cftime.num2pydate(DSin['time'][-1],DSin['time'].units)
-    
+
     try: outfile.close()  # just to be safe, make sure dataset is not already open.
     except: pass
-    DSout = nc4.Dataset(outfile,mode='w',format='NETCDF4') 
+    DSout = nc4.Dataset(outfile,mode='w',format='NETCDF4')
     print("Creating {}".format(outfile));
 
     # ------------------------
@@ -73,7 +73,7 @@ def convert_camra_ts_l0a2l0b(infile,outfile):
     # ------------------------
     DSout.product_version = "v1.0" ;
     DSout.processing_level = "0b" ;
-    
+
     DSout.licence = "Data usage licence - UK Open Government Licence agreement: \n http://www.nationalarchives.gov.uk/doc/open-government-licence" ;
     DSout.acknowledgement = "Acknowledgement is required of UK Research and Innovation as the data provider (in partnership with the National Centre for Atmospheric Science) whenever and wherever these data are used." ;
     DSout.platform = "Chilbolton Atmospheric Observatory" ;
@@ -94,155 +94,155 @@ def convert_camra_ts_l0a2l0b(infile,outfile):
     DSout.project_principal_investigator = "Anthony Illingworth";
     DSout.project_principal_investigator_email = "a.j.illingworth@reading.ac.uk";
     DSout.project_principal_investigator_url = "https://orcid.org/0000-0002-5774-8410";
-    
+
     DSout.processing_software_url = "https://github.com/longlostjames/wivern_chilbolton_utils.git";
-    DSout.processing_software_version = "1.0"; 
-        
+    DSout.processing_software_version = "1.0";
+
     DSout.scantype = "vertical_pointing";
-    
+
     DSout.time_coverage_start = datetime.strftime(dt_start,'%Y-%m-%dT%H:%M:%SZ');
     DSout.time_coverage_end = datetime.strftime(dt_end,'%Y-%m-%dT%H:%M:%SZ');
     DSout.geospatial_bounds = "51.1450N -1.4384E";
-    
+
     DSout.pulse_compression = "false";
-    
+
     DSout.ADC_bits_per_sample = np.int(DSin.ADC_bits_per_sample);
     DSout.ADC_channels        = np.int(DSin.ADC_channels);
-    
+
     # ----------------
     # Scalar variables
     # ----------------
 
     varin = DSin['latitude'];
-    varout = DSout.createVariable('latitude',varin.datatype);    
+    varout = DSout.createVariable('latitude',varin.datatype);
     varout.standard_name = 'latitude';
     varout.long_name = 'latitude of the antenna';
     varout.units = 'degree_north';
     varout[:]=51.1450;
-    
+
     varin = DSin['longitude'];
-    varout = DSout.createVariable('longitude',varin.datatype);    
+    varout = DSout.createVariable('longitude',varin.datatype);
     varout.standard_name = 'longitude';
     varout.long_name = 'longitude of the antenna';
     varout.units = 'degree_east';
     varout[:]=-1.4384;
 
     varin = DSin['height'];
-    varout = DSout.createVariable('altitude',varin.datatype);    
+    varout = DSout.createVariable('altitude',varin.datatype);
     varout.standard_name = 'altitude';
     varout.long_name = 'altitude of the elevation axis above the geoid (WGS84)';
     varout.units = 'm';
     varout[:]=146.7;
 
-    varout = DSout.createVariable('altitude_agl',varin.datatype);    
+    varout = DSout.createVariable('altitude_agl',varin.datatype);
     varout.standard_name = 'altitude';
     varout.long_name = 'altitude of the elevation axis above ground';
     varout.units = 'm';
     varout[:]=16.0;
-    
+
     varin = DSin['frequency'];
-    varout = DSout.createVariable('frequency',varin.datatype);    
+    varout = DSout.createVariable('frequency',varin.datatype);
     varout.standard_name = 'radiation_frequency';
     varout.long_name = 'frequency of transmitted radiation';
     varout.units = 'GHz';
     varout[:]=varin[:];
-  
+
     varin = DSin['prf'];
-    varout = DSout.createVariable('prf',varin.datatype);    
+    varout = DSout.createVariable('prf',varin.datatype);
     varout.long_name = 'pulse repetition frequency';
     varout.units = 'Hz';
     varout[:]=varin[:];
-    
+
     varin = DSin['beamwidthH'];
-    varout = DSout.createVariable('beamwidthH',varin.datatype);    
+    varout = DSout.createVariable('beamwidthH',varin.datatype);
     varout.long_name = 'horizontal angular beamwidth';
     varout.units = 'degree';
     varout[:]=varin[:];
-    
+
     varin = DSin['beamwidthV'];
-    varout = DSout.createVariable('beamwidthV',varin.datatype);    
+    varout = DSout.createVariable('beamwidthV',varin.datatype);
     varout.long_name = 'vertical angular beamwidth';
     varout.units = 'degree';
     varout[:]=varin[:];
-    
+
     varin = DSin['antenna_diameter'];
-    varout = DSout.createVariable('antenna_diameter',varin.datatype);    
+    varout = DSout.createVariable('antenna_diameter',varin.datatype);
     varout.long_name = 'antenna diameter';
     varout.units = 'm';
     varout[:]=varin[:];
 
-    varout = DSout.createVariable('antenna_focal_length','f4');    
+    varout = DSout.createVariable('antenna_focal_length','f4');
     varout.long_name = 'focal length of antenna';
     varout.units = 'm';
     varout[:] = 9.0;
-    
+
     varout = DSout.createVariable('antenna_focus_radial_location','f4');
     varout.long_name = 'distance along boresight from elevation axis to antenna focus';
     varout.units = 'm';
     varout[:] = 14.34;
-    
+
     varin = DSin['pulse_period'];
-    varout = DSout.createVariable('pulse_width',varin.datatype);    
+    varout = DSout.createVariable('pulse_width',varin.datatype);
     varout.long_name = 'pulse width';
     varout.units = 'us';
     varout[:]=varin[:];
-    
+
     varin = DSin['transmit_power'];
-    varout = DSout.createVariable('transmit_power',varin.datatype);    
+    varout = DSout.createVariable('transmit_power',varin.datatype);
     varout.long_name = 'peak transmitted power';
     varout.units = 'W';
     varout[:]=varin[:];
-    
+
     varin = DSin['clock'];
-    varout = DSout.createVariable('clock',varin.datatype);    
+    varout = DSout.createVariable('clock',varin.datatype);
     varout.long_name = 'clock input to timer card';
     varout.units = 'Hz';
     varout[:]=varin[:];
-    
-    varout = DSout.createVariable('clock_divfactor','i4');    
+
+    varout = DSout.createVariable('clock_divfactor','i4');
     varout.long_name = 'clock divide factor';
     varout.units = '1';
-    varout[:]=DSin['clock'].clock_divfactor; 
-    
-    varout = DSout.createVariable('delay_clocks','i4');    
+    varout[:]=DSin['clock'].clock_divfactor;
+
+    varout = DSout.createVariable('delay_clocks','i4');
     varout.long_name = 'clock cycles before sampling is initiated';
     varout.units = '1';
-    varout[:]=DSin.delay_clocks; 
-    
-    varout = DSout.createVariable('samples_per_pulse','i4');    
+    varout[:]=DSin.delay_clocks;
+
+    varout = DSout.createVariable('samples_per_pulse','i4');
     varout.long_name = 'number of samples per pulse';
     varout.units = '1';
-    varout[:]=DSin.samples_per_pulse;    
+    varout[:]=DSin.samples_per_pulse;
 
-    varout = DSout.createVariable('pulses_per_daq_cycle','i4');    
+    varout = DSout.createVariable('pulses_per_daq_cycle','i4');
     varout.long_name = 'number of pulses per data acquisition cycle';
     varout.units = '1';
-    varout[:]=DSin.pulses_per_daq_cycle; 
-    
-    varout = DSout.createVariable('pulses_per_ray','i4');    
+    varout[:]=DSin.pulses_per_daq_cycle;
+
+    varout = DSout.createVariable('pulses_per_ray','i4');
     varout.long_name = 'number of pulses per ray';
     varout.units = '1';
-    varout[:]=DSin.pulses_per_ray;    
+    varout[:]=DSin.pulses_per_ray;
 
-    varout = DSout.createVariable('radar_constant','f4');    
+    varout = DSout.createVariable('radar_constant','f4');
     varout.long_name = 'radar constant';
     varout.units = 'dB';
-    varout[:]=DSin.radar_constant; 
-    
-    varout = DSout.createVariable('receiver_gain','f4');    
+    varout[:]=DSin.radar_constant;
+
+    varout = DSout.createVariable('receiver_gain','f4');
     varout.long_name = 'receiver gain';
     varout.units = 'dB';
-    varout[:]=DSin.receiver_gain; 
+    varout[:]=DSin.receiver_gain;
 
-    varout = DSout.createVariable('cable_losses','f4');    
+    varout = DSout.createVariable('cable_losses','f4');
     varout.long_name = 'cable losses';
     varout.units = 'dB';
-    varout[:]=DSin.cable_losses; 
+    varout[:]=DSin.cable_losses;
 
-    varout = DSout.createVariable('extra_attenuation','f4');    
+    varout = DSout.createVariable('extra_attenuation','f4');
     varout.long_name = 'extra attenuation';
     varout.units = 'dB';
-    varout[:]=DSin.extra_attenuation; 
+    varout[:]=DSin.extra_attenuation;
 
 
     # ---------------
@@ -256,24 +256,24 @@ def convert_camra_ts_l0a2l0b(infile,outfile):
 
     the_dim = DSin.dimensions['samples'];
     DSout.createDimension('range', len(the_dim) if not the_dim.isunlimited() else None)
-    
+
     # --------------------
     # Coordinate variables
     # --------------------
     varin = DSin['time'];
-    varout = DSout.createVariable('time',varin.datatype,('time'));    
+    varout = DSout.createVariable('time',varin.datatype,('time'));
     varout.standard_name = 'time';
     varout.long_name = 'time at the end of each recorded ray';
     varout.units = varin.units;
     varout[:]=varin[:];
 
     varin = DSin['range'];
-    varout = DSout.createVariable('range',varin.datatype,('range'));    
+    varout = DSout.createVariable('range',varin.datatype,('range'));
     varout.long_name = varin.long_name;
     varout.range_offset_applied = np.float32(varin.range_offset);
     varout.units = varin.units;
-    varout[:]=varin[:]; 
-    
+    varout[:]=varin[:];
+
     # --------------------------
     # Antenna pointing variables
     # --------------------------
@@ -283,7 +283,7 @@ def convert_camra_ts_l0a2l0b(infile,outfile):
     varout.units = 'degree';
     varout.elevation_offset_applied = np.float32(0.);
     varout[:] = varin[:];
-    
+
     varin = DSin['azimuth'];
     varout = DSout.createVariable('azimuth',varin.datatype,'time');
     varout.long_name = 'azimuth angle of the antenna boresight clockwise from the grid north';
@@ -291,12 +291,12 @@ def convert_camra_ts_l0a2l0b(infile,outfile):
     varout.units = 'degree';
     varout.azimuth_offset_applied = np.float32(0.);
     varout[:] = varin[:];
-        
+
     # ---------------
     # Field variables
     # ---------------
     varin = DSin['ZLO'];
-    varout = DSout.createVariable('ZLO',varin.datatype,('time','pulse','range'),zlib=True);    
+    varout = DSout.createVariable('ZLO',varin.datatype,('time','pulse','range'),zlib=True);
     varout.long_name = 'ZLO log amplifier output (channel with +12dB gain)';
     varout.units = 'dB';
     varout[:]=varin[:];
@@ -309,7 +309,7 @@ def convert_camra_ts_l0a2l0b(infile,outfile):
     varout.actual_range = [np.float32(-70.),np.float32(-10.)];
 
     varin = DSin['ZHI'];
-    varout = DSout.createVariable('ZHI',varin.datatype,('time','pulse','range'),zlib=True);    
+    varout = DSout.createVariable('ZHI',varin.datatype,('time','pulse','range'),zlib=True);
     varout.long_name = 'ZHI log amplifier output (channel with -20dB attenuation)';
     varout.units = 'dB';
     varout[:] = varin[:];
@@ -320,9 +320,9 @@ def convert_camra_ts_l0a2l0b(infile,outfile):
     varout.scale_factor = np.float32(0.015625);
     varout.add_offset = np.float32(-38.);
     varout.actual_range = [np.float32(-9.984375), np.float32(25.984375)];
-    
+
     varin = DSin['ZCX'];
-    varout = DSout.createVariable('ZCX',varin.datatype,('time','pulse','range'),zlib=True);    
+    varout = DSout.createVariable('ZCX',varin.datatype,('time','pulse','range'),zlib=True);
     varout.long_name = 'cross-polar log amplifier output';
     varout.units = 'dB';
     varout[:]=varin[:];
@@ -331,7 +331,7 @@ def convert_camra_ts_l0a2l0b(infile,outfile):
     varout.comment = comment_string;
     varout.scale_factor = np.float32(0.03125);
     varout.add_offset = np.float32(-77.);
-    
+
     # -------------------------------------------------------
     # Determine bias-corrected I and Q of each transmit pulse
     # -------------------------------------------------------
@@ -349,18 +349,18 @@ def convert_camra_ts_l0a2l0b(infile,outfile):
 
     ITX_bias_by_gate = np.mean(ITXin,axis=1);
     QTX_bias_by_gate = np.mean(QTXin,axis=1);
-    
+
     ITXnew = ITXin - ITX_bias_by_gate[:,None,:];
     QTXnew = QTXin - QTX_bias_by_gate[:,None,:];
 
     # Only use data while sample and hold is active
     # ---------------------------------------------
     sample_end = min([hold_end,len(DSin.dimensions['samples'])]);
-    
+
     ITXout = np.mean(ITXnew[:,:,post_tx:sample_end],axis=2);
     QTXout = np.mean(QTXnew[:,:,post_tx:sample_end],axis=2);
 
-    varout = DSout.createVariable('ITX','f4',('time','pulse'),zlib=True);    
+    varout = DSout.createVariable('ITX','f4',('time','pulse'),zlib=True);
 #    add_offset = np.min(ITXout[:]);
 #    scale_factor = (np.max(ITXout[:])-np.min(ITXout[:])) / (2**16-1)
 #    packed_data = np.int16(np.rint((ITXout[:,:] - add_offset)/scale_factor));
@@ -368,10 +368,10 @@ def convert_camra_ts_l0a2l0b(infile,outfile):
 #    varout.add_offset = np.float32(add_offset);
     varout.long_name = 'bias-corrected samples of in-phase video signal for each transmitted pulse';
     varout.units = '1';
-#    varout[:] = packed_data; 
+#    varout[:] = packed_data;
     varout[:]=ITXout;
-    
-    varout = DSout.createVariable('QTX','f4',('time','pulse'),zlib=True);    
+
+    varout = DSout.createVariable('QTX','f4',('time','pulse'),zlib=True);
 #    add_offset = np.min(QTXout[:]);
 #    scale_factor = (np.max(QTXout[:])-np.min(QTXout[:])) / (2**16-1)
 #    packed_data = np.int16(np.rint((QTXout[:,:] - add_offset)/scale_factor));
@@ -379,9 +379,9 @@ def convert_camra_ts_l0a2l0b(infile,outfile):
 #    varout.add_offset = np.float32(add_offset);
     varout.long_name = 'bias-corrected samples of quadrature video signal for each transmitted pulse';
     varout.units = '1';
-#    varout[:] = packed_data; 
+#    varout[:] = packed_data;
     varout[:]=QTXout;
-    
+
     # ----------------------------------------
     # Determine bias-corrected receive I and Q
     # ----------------------------------------
@@ -391,8 +391,8 @@ def convert_camra_ts_l0a2l0b(infile,outfile):
     QRX_bias_by_gate = np.mean(QRXin,axis=1);
     IRXout = IRXin - IRX_bias_by_gate[:,None,:];
     QRXout = QRXin - QRX_bias_by_gate[:,None,:];
-    
-    varout = DSout.createVariable('IRX','f4',('time','pulse','range'),zlib=True);    
+
+    varout = DSout.createVariable('IRX','f4',('time','pulse','range'),zlib=True);
 #    add_offset = np.min(IRXout[:]);
 #    scale_factor = (np.max(IRXout[:])-np.min(IRXout[:])) / (2**16-1)
 #    packed_data = np.int16(np.rint((IRXout[:,:,:] - add_offset)/scale_factor));
@@ -402,9 +402,9 @@ def convert_camra_ts_l0a2l0b(infile,outfile):
     varout.units = '1';
 #    varout[:] = packed_data;
     varout[:]=IRXout;
-    
+
     varin = DSin['QRX'];
-    varout = DSout.createVariable('QRX','f4',('time','pulse','range'),zlib=True);    
+    varout = DSout.createVariable('QRX','f4',('time','pulse','range'),zlib=True);
 #    add_offset = np.min(QRXout[:]);
 #    scale_factor = (np.max(QRXout[:])-np.min(QRXout[:])) / (2**16-1)
 #    packed_data = np.int16(np.rint((QRXout[:,:,:] - add_offset)/scale_factor));
@@ -414,12 +414,12 @@ def convert_camra_ts_l0a2l0b(infile,outfile):
     varout.units = '1';
 #    varout[:] = packed_data;
     varout[:]=QRXout;
-    
+
     # -----------------------
     # Update history metadata
     # -----------------------
     user = getpass.getuser()
-    
+
     updttime = datetime.utcnow()
     updttimestr = updttime.ctime()
 
@@ -427,7 +427,7 @@ def convert_camra_ts_l0a2l0b(infile,outfile):
     + " machine: " + socket.gethostname()
     + " program: wivern_chilbolton_utils.py convert_camra_ts_l0a2l0b"
     + " version:" + str(module_version));
-    
+
     DSout.history = history + "\n" + DSin.history;
 
     DSout.last_revised_date = datetime.strftime(updttime,'%Y-%m-%dT%H:%M:%SZ')
@@ -438,15 +438,15 @@ def convert_camra_ts_l0a2l0b(infile,outfile):
     return
 
 def convert_camra_ts_l0b2l1(infile,outfile,dBZh_offset,ZDR_offset,range_offset,version):
-     
+
     """This routine converts Level 0b time series data from the Chilbolton Advanced Meteorological Radar (CAMRa) to Level 1 data.
 
-    Processing is applied to produce I and Q time series for received data at each range gate.  
-    I and Q values from the limiting amplifiers in the receiver are compared with transmit I and Q for each pulse.  
+    Processing is applied to produce I and Q time series for received data at each range gate.
+    I and Q values from the limiting amplifiers in the receiver are compared with transmit I and Q for each pulse.
     These are then scaled to the unit circle and multiplied the square root of the sampled linear reflectivity.
     Processing includes separate calibration offsets for even (H-polarized) and odd (V-polarized) pulses.
     Metadata are added specific to the WIVERN-2 project ground-based observations collected in 2020-2021.
-    
+
     :param infile: Full path of NetCDF Level 0b input file, e.g. `<path-to-file>/ncas-radar-camra-1_cao_20201210-212823_fix-ts_l0b_v1.0.nc`
     :type infile: str
     :param outfile: Full path of NetCDF Level 1 output file, e.g. `<path-to-file>/ncas-radar-camra-1_cao_20201210-212823_fix-ts_l1_v1.0.nc`
@@ -464,7 +464,7 @@ def convert_camra_ts_l0b2l1(infile,outfile,dBZh_offset,ZDR_offset,range_offset,v
     toexclude = ['ZLO', 'ZHI', 'ZCX', 'ITX', 'QTX', 'IRX', 'QRX'];
 
     with nc4.Dataset(infile) as src, nc4.Dataset(outfile,mode='w',format='NETCDF4') as dst:
-        
+
         # copy global attributes all at once via dictionary
         dst.setncatts(src.__dict__)
 
@@ -485,41 +485,41 @@ def convert_camra_ts_l0b2l1(infile,outfile,dBZh_offset,ZDR_offset,range_offset,v
 
     try: outfile.close()  # just to be safe, make sure dataset is not already open.
     except: pass
-    DSout = nc4.Dataset(outfile,mode='r+',format='NETCDF4') 
+    DSout = nc4.Dataset(outfile,mode='r+',format='NETCDF4')
     print(outfile)
 
     DSin = nc4.Dataset(infile);
     dt = cftime.num2pydate(DSin['time'][:],DSin['time'].units);
-    
+
     DSout.product_version = "v{}".format(version) ;
     DSout.processing_level = "1" ;
 
     DSout.title = "Calibrated time series from 3 GHz CAMRa radar collected for ESA WIVERN-2 campaign at Chilbolton Observatory";
-    
+
     comment_string = "Correction to account for inverse square power loss with range has not been applied";
     if len(DSin.comment)>0:
         DSout.comment = DSin.comment + "\n " + comment_string;
     else:
         DSout.comment = comment_string;
-    
-    varout = DSout.createVariable('dBZ_offsets_applied','f4',('pulse'),zlib=True);    
+
+    varout = DSout.createVariable('dBZ_offsets_applied','f4',('pulse'),zlib=True);
     varout.long_name = 'dBZ calibration offsets applied for even and odd pulses';
     varout.units = 'dB';
     varout.comment = 'dBZ offsets for even pulses (H-polarized) and odd pulses (V-polarized)';
 
-    varout = DSout.createVariable('I','f4',('time','pulse','range'),zlib=True);    
+    varout = DSout.createVariable('I','f4',('time','pulse','range'),zlib=True);
     varout.ancillary_variables = 'qc_flag';
     varout.long_name = 'co-polar in-phase video signal';
     varout.units = '1';
     varout.comment = 'Values are derived from I/Q on unit circle multiplied by square root of linear reflectivity factor';
 
-    varout = DSout.createVariable('Q','f4',('time','pulse','range'),zlib=True);    
+    varout = DSout.createVariable('Q','f4',('time','pulse','range'),zlib=True);
     varout.ancillary_variables = 'qc_flag';
     varout.long_name = 'co-polar quadrature video signal';
     varout.units = '1';
     varout.comment = 'Values are derived from I/Q on unit circle multiplied by square root of linear reflectivity factor';
 
-    varout = DSout.createVariable('ZCX','f4',('time','pulse','range'),zlib=True);    
+    varout = DSout.createVariable('ZCX','f4',('time','pulse','range'),zlib=True);
     varout.ancillary_variables = 'qc_flag';
     varout.long_name = 'cross-polar radar equivalent reflectivity factor';
     varout.units = 'dBZ';
@@ -534,49 +534,49 @@ def convert_camra_ts_l0b2l1(infile,outfile,dBZh_offset,ZDR_offset,range_offset,v
     varout[:] = 2;
 
     cable_losses = DSout['cable_losses'][:];
-    radar_const  = DSout['radar_constant'][:]; 
+    radar_const  = DSout['radar_constant'][:];
     rec_gain     = DSout['receiver_gain'][:];
     freq         = DSout['frequency'][:];
     prf          = DSout['prf'][:];
-    
+
     dBZv_offset = dBZh_offset-ZDR_offset;
 
     dBZcal = radar_const-rec_gain+cable_losses;
-    
+
     DSout['dBZ_offsets_applied'][::2]  = dBZh_offset;
     DSout['dBZ_offsets_applied'][1::2] = dBZv_offset;
- 
+
     Zh_cal = 10**((dBZcal+dBZh_offset)/10);
     Zv_cal = 10**((dBZcal+dBZv_offset)/10);
-   
+
     range_m  = DSin['range'][:];
     range_km = (range_m+range_offset)/1000.; # range in km
 
-    ITX = DSin['ITX'][:,:]; #*DSin['ITX'].scale_factor+DSin['ITX'].add_offset; 
+    ITX = DSin['ITX'][:,:]; #*DSin['ITX'].scale_factor+DSin['ITX'].add_offset;
     QTX = DSin['QTX'][:,:]; #*DSin['QTX'].scale_factor+DSin['QTX'].add_offset;
     IRX = DSin['IRX'][:,:,:]; #*DSin['IRX'].scale_factor+DSin['IRX'].add_offset;
     QRX = DSin['QRX'][:,:,:]; #*DSin['QRX'].scale_factor+DSin['QRX'].add_offset;
 
     Vtx = ITX - 1j*QTX;
     Vrx = IRX + 1j*QRX;
-    
+
     V = np.multiply(Vrx[:,:,:], Vtx[:,:,None]);
     V = ma.masked_where(V==0,V);
     V = ma.divide(np.conj(V),np.abs(V));
 
     V[:,1::2,:] = V[:,1::2,:]*-1.;
-    
+
     ZLO  = DSin['ZLO'][:,:,:];
     ZHI  = DSin['ZHI'][:,:,:];
-    
+
     threshold          = DSin['ZLO'].actual_range[1];
-    
+
     ZED                = ZLO.copy();
     ZED[ZLO>threshold] = ZHI[ZLO>threshold];
-        
+
     # Convert to linear ZED
     ZED = np.power(10,ZED/10.);
-    
+
     ZED[:, ::2,:] = ZED[:, ::2,:]*Zh_cal;
     ZED[:,1::2,:] = ZED[:,1::2,:]*Zv_cal;
 
@@ -590,9 +590,9 @@ def convert_camra_ts_l0b2l1(infile,outfile,dBZh_offset,ZDR_offset,range_offset,v
  #   DSout['ZCX'].add_offset = np.float32(add_offset);
  #   DSout['ZCX'][:] = packed_data;
     DSout['ZCX'][:] = ZCX;
-    
+
     V = V*np.sqrt(ZED);
-    
+
     I = V.real;
     Q = V.imag;
 
@@ -616,9 +616,9 @@ def convert_camra_ts_l0b2l1(infile,outfile,dBZh_offset,ZDR_offset,range_offset,v
     DSout['range'][:] = range_m;
     DSout['range'].range_offset_applied += range_offset;
     DSout['range'].comment = "range_offset_applied includes offset applied by the data acquisition program";
-    
+
     user = getpass.getuser();
-    
+
     updttime = datetime.utcnow();
     updttimestr = updttime.ctime();
 
@@ -626,14 +626,14 @@ def convert_camra_ts_l0b2l1(infile,outfile,dBZh_offset,ZDR_offset,range_offset,v
     + " machine: " + socket.gethostname()
     + " program: wivern_chilbolton_utils.py convert_camra_ts_l0b2l1"
     + " version:" + str(module_version));
-    
+
     print(history);
 
     DSout.history = history + "\n" + DSin.history;
-    
+
     DSin.close();
     DSout.close();
-    
+
     return
 
 def convert_copernicus_ts_l0a2l1(infile,outfile,dBZ_offset,range_offset,data_version):
@@ -641,14 +641,14 @@ def convert_copernicus_ts_l0a2l1(infile,outfile,dBZ_offset,range_offset,data_ver
     """This routine converts raw (Level 0a) time series data from the Chilbolton 35GHz Cloud Radar (Copernicus) to Level 1 data.
     Processing involves removing redundant dimensions, and removing bias from the ADC samples of the received I and Q.
     Metadata are added specific to the WIVERN-2 project ground-based observations collected in 2020-2021.
-    
+
     :param infile: Full path of binary Level 0a raw data file, e.g. `<path-to-file>/2021061813445611_iqdata.bin`
     :type infile: str
-    
+
     :param outfile: Full path of NetCDF Level 0b output file, e.g. `<path-to-file>/ncas-radar-ka-band-1_cao_20210618-134456_fix-ts_l1_v1.0.nc`
     :type outfile: str
 
-    :param dBZ_offset: dB calibration offset to apply to reflectivity.  This is converted to linear units and I and Q values are multiplied by the square root of this value.  
+    :param dBZ_offset: dB calibration offset to apply to reflectivity.  This is converted to linear units and I and Q values are multiplied by the square root of this value.
     :type dBZoffset: float
 
     :param range_offset: Range offset to apply in m.
@@ -667,7 +667,7 @@ def convert_copernicus_ts_l0a2l1(infile,outfile,dBZ_offset,range_offset,data_ver
     A         = np.fromfile(infile, dtype=header_dt, count=1)[0];
     ngate     = A['ngates'];
     npulse    = A['npulses'];
-    iq_dt     = np.dtype([('IQ',"({},{})<i2".format(npulse,ngate))]);   
+    iq_dt     = np.dtype([('IQ',"({},{})<i2".format(npulse,ngate))]);
     record_dt = np.dtype([('time',time_dt),('I',iq_dt),('Q',iq_dt)]);
 
     records = np.fromfile(infile,dtype=record_dt, offset=8);
@@ -681,14 +681,14 @@ def convert_copernicus_ts_l0a2l1(infile,outfile,dBZ_offset,range_offset,data_ver
     # -----------------------------
     # Set up NetCDF file for output
     # -----------------------------
-    DSout = nc4.Dataset(outfile,mode='w',format='NETCDF4') 
+    DSout = nc4.Dataset(outfile,mode='w',format='NETCDF4')
 
     # ------------------------
     # Set up global attributes
     # ------------------------
     DSout.product_version = "v{}".format(data_version);
     DSout.processing_level = "1" ;
-    
+
     DSout.licence = "Data usage licence - UK Open Government Licence agreement: \n http://www.nationalarchives.gov.uk/doc/open-government-licence" ;
     DSout.acknowledgement = "Acknowledgement is required of UK Research and Innovation as the data provider (in partnership with the National Centre for Atmospheric Science) whenever and wherever these data are used." ;
     DSout.platform = "Chilbolton Atmospheric Observatory" ;
@@ -709,18 +709,18 @@ def convert_copernicus_ts_l0a2l1(infile,outfile,dBZ_offset,range_offset,data_ver
     DSout.project_principal_investigator = "Anthony Illingworth";
     DSout.project_principal_investigator_email = "a.j.illingworth@reading.ac.uk";
     DSout.project_principal_investigator_url = "https://orcid.org/0000-0002-5774-8410";
-    
+
     DSout.processing_software_url = "https://github.com/longlostjames/wivern_chilbolton_utils.git";
-    DSout.processing_software_version = "1.0"; 
-        
+    DSout.processing_software_version = "1.0";
+
     DSout.scantype = "vertical_pointing";
-    
+
     DSout.time_coverage_start = datetime.strftime(dt_start,'%Y-%m-%dT%H:%M:%SZ');
     DSout.time_coverage_end = datetime.strftime(dt_end,'%Y-%m-%dT%H:%M:%SZ');
     DSout.geospatial_bounds = "51.1450N -1.4384E";
-    
+
     DSout.pulse_compression = "false";
-    
+
     DSout.ADC_bits_per_sample = np.int(12);
     DSout.ADC_channels        = np.int(8);
 
@@ -728,111 +728,111 @@ def convert_copernicus_ts_l0a2l1(infile,outfile,dBZ_offset,range_offset,data_ver
     # Scalar variables
     # ----------------
 
-    varout = DSout.createVariable('latitude','f4');    
+    varout = DSout.createVariable('latitude','f4');
     varout.standard_name = 'latitude';
     varout.long_name = 'latitude of the antenna';
     varout.units = 'degree_north';
     varout[:]=51.1450;
-    
-    varout = DSout.createVariable('longitude','f4');    
+
+    varout = DSout.createVariable('longitude','f4');
     varout.standard_name = 'longitude';
     varout.long_name = 'longitude of the antenna';
     varout.units = 'degree_east';
     varout[:]=-1.4384;
 
-    varout = DSout.createVariable('altitude','f4');    
+    varout = DSout.createVariable('altitude','f4');
     varout.standard_name = 'altitude';
     varout.long_name = 'altitude of the antenna above the geoid (WGS84)';
     varout.units = 'm';
 
-    varout = DSout.createVariable('altitude_agl','f4');    
+    varout = DSout.createVariable('altitude_agl','f4');
     varout.long_name = 'altitude of the antenna above ground';
     varout.units = 'm';
     varout[:] = 1.9;
 
-    varout = DSout.createVariable('frequency','f4');    
+    varout = DSout.createVariable('frequency','f4');
     varout.standard_name = 'radiation_frequency';
     varout.long_name = 'frequency of transmitted radiation';
     varout.units = 'GHz';
     varout[:]=34.96;
-  
-    varout = DSout.createVariable('prf','f4');    
+
+    varout = DSout.createVariable('prf','f4');
     varout.long_name = 'pulse repetition frequency';
     varout.units = 'Hz';
     varout[:]=5000;
-    
-    varout = DSout.createVariable('beamwidthH','f4');    
+
+    varout = DSout.createVariable('beamwidthH','f4');
     varout.long_name = 'horizontal angular beamwidth';
     varout.units = 'degree';
     varout[:]=0.25;
-    
-    varout = DSout.createVariable('beamwidthV','f4');    
+
+    varout = DSout.createVariable('beamwidthV','f4');
     varout.long_name = 'vertical angular beamwidth';
     varout.units = 'degree';
     varout[:]=0.25;
-    
-    varout = DSout.createVariable('antenna_diameter','f4');    
+
+    varout = DSout.createVariable('antenna_diameter','f4');
     varout.long_name = 'antenna diameter';
     varout.units = 'm';
     varout[:]=2.4;
 
-    varout = DSout.createVariable('antenna_focal_length','f4');    
+    varout = DSout.createVariable('antenna_focal_length','f4');
     varout.long_name = 'focal length of antenna';
     varout.units = 'm';
     varout[:] = 0.75;
-    
-    varout = DSout.createVariable('pulse_width','f4');    
+
+    varout = DSout.createVariable('pulse_width','f4');
     varout.long_name = 'pulse width';
     varout.units = 'us';
     varout[:]=0.4;
-    
-    varout = DSout.createVariable('transmit_power','f4');    
+
+    varout = DSout.createVariable('transmit_power','f4');
     varout.long_name = 'peak transmitted power';
     varout.units = 'W';
     varout[:]=1500;
-    
-    varout = DSout.createVariable('clock','f4');    
+
+    varout = DSout.createVariable('clock','f4');
     varout.long_name = 'clock input to timer card';
     varout.units = 'Hz';
     varout[:]=10000000;
-    
-    varout = DSout.createVariable('clock_divfactor','i4');    
+
+    varout = DSout.createVariable('clock_divfactor','i4');
     varout.long_name = 'clock divide factor';
     varout.units = '1';
     varout[:]=2;
-    
-    varout = DSout.createVariable('delay_clocks','i4');    
+
+    varout = DSout.createVariable('delay_clocks','i4');
     varout.long_name = 'clock cycles before sampling is initiated';
     varout.units = '1';
-    varout[:]=3; 
-    
-    varout = DSout.createVariable('samples_per_pulse','i4');    
+    varout[:]=3;
+
+    varout = DSout.createVariable('samples_per_pulse','i4');
     varout.long_name = 'number of samples per pulse';
     varout.units = '1';
     varout[:] = ngate;
 
-    varout = DSout.createVariable('pulses_per_daq_cycle','i4');    
+    varout = DSout.createVariable('pulses_per_daq_cycle','i4');
     varout.long_name = 'number of pulses per data acquisition cycle';
     varout.units = '1';
-    
-    varout = DSout.createVariable('pulses_per_ray','i4');    
+
+    varout = DSout.createVariable('pulses_per_ray','i4');
     varout.long_name = 'number of pulses per ray';
     varout.units = '1';
     varout[:] = npulse;
 
-    varout = DSout.createVariable('radar_constant','f4');    
+    varout = DSout.createVariable('radar_constant','f4');
     varout.long_name = 'radar constant';
     varout.units = 'dB';
-    
-    varout = DSout.createVariable('receiver_gain','f4');    
+
+    varout = DSout.createVariable('receiver_gain','f4');
     varout.long_name = 'receiver gain';
     varout.units = 'dB';
 
-    varout = DSout.createVariable('cable_losses','f4');    
+    varout = DSout.createVariable('cable_losses','f4');
     varout.long_name = 'cable losses';
     varout.units = 'dB';
 
-    varout = DSout.createVariable('extra_attenuation','f4');    
+    varout = DSout.createVariable('extra_attenuation','f4');
     varout.long_name = 'extra attenuation';
     varout.units = 'dB';
     varout[:] = 0.0;
@@ -853,22 +853,22 @@ def convert_copernicus_ts_l0a2l1(infile,outfile,dBZ_offset,range_offset,data_ver
     DSout.createDimension('time', None);
     DSout.createDimension('pulse', npulse);
     DSout.createDimension('range', ngate);
-    
+
     # --------------------
     # Coordinate variables
     # --------------------
-    varout = DSout.createVariable('time','f4',('time'));    
+    varout = DSout.createVariable('time','f4',('time'));
     varout.standard_name = 'time';
     varout.long_name = 'time at the start of each recorded ray';
     varout.units = time_units_out;
     varout[:]=nc4.date2num(times,varout.units);
 
-    varout = DSout.createVariable('range','f4',('range'));    
+    varout = DSout.createVariable('range','f4',('range'));
     varout.long_name = 'distance from the antenna to the middle of each range gate';
     varout.range_offset_applied = np.float32(range_offset);
     varout.units = 'm';
-    varout[:]=range_m; 
-    
+    varout[:]=range_m;
+
     # --------------------------
     # Antenna pointing variables
     # --------------------------
@@ -876,7 +876,7 @@ def convert_copernicus_ts_l0a2l1(infile,outfile,dBZ_offset,range_offset,data_ver
     varout.long_name = 'elevation angle of the antenna boresight above the horizon';
     varout.units = 'degree';
     varout.elevation_offset_applied = np.float32(0.);
-    
+
     varout = DSout.createVariable('azimuth','f4','time');
     varout.long_name = 'azimuth angle clockwise from grid north of the plane perpendicular to axis of the elevation tilting mechanism';
     varout.units = 'degree';
@@ -885,13 +885,13 @@ def convert_copernicus_ts_l0a2l1(infile,outfile,dBZ_offset,range_offset,data_ver
     # ---------------
     # Field variables
     # ---------------
-    varout = DSout.createVariable('I','f4',('time','pulse','range'),zlib=True);    
+    varout = DSout.createVariable('I','f4',('time','pulse','range'),zlib=True);
     varout.ancillary_variables = 'qc_flag';
     varout.long_name = 'co-polar in-phase video signal';
     varout.units = '1';
     varout.comment = 'Scaled to account for calibration for square root of linear reflectivity factor';
-    
-    varout = DSout.createVariable('Q','f4',('time','pulse','range'),zlib=True);    
+
+    varout = DSout.createVariable('Q','f4',('time','pulse','range'),zlib=True);
     varout.ancillary_variables = 'qc_flag';
     varout.long_name = 'co-polar quadrature video signal';
     varout.units = '1';
@@ -910,14 +910,14 @@ def convert_copernicus_ts_l0a2l1(infile,outfile,dBZ_offset,range_offset,data_ver
 
     I = np.stack(Itmp);
     Q = np.stack(Qtmp);
-    
+
     Imean = np.mean(I,axis=1);
     Qmean = np.mean(Q,axis=1);
 
     I[:,:,:] = I[:,:,:]-Imean[:,None,:];
     Q[:,:,:] = Q[:,:,:]-Qmean[:,None,:];
-    
-#    Zcal=-146.8-1.0+115; 
+
+#    Zcal=-146.8-1.0+115;
 
     Zcal=dBZ_offset+10*np.log10(DSout['prf'][:]/512);
 
@@ -925,7 +925,7 @@ def convert_copernicus_ts_l0a2l1(infile,outfile,dBZ_offset,range_offset,data_ver
 
     I=I*np.sqrt(10**(Zcal/10.0));
     Q=Q*np.sqrt(10**(Zcal/10.0));
-    
+
     DSout['I'][:] = I;
     DSout['Q'][:] = Q;
 
@@ -940,14 +940,14 @@ def convert_galileo_ts_l0b2l1(infile,outfile,dBZ_offset,range_offset,data_versio
     Level 0b data have been generated from as-recorded Level 0a data by splitting the files along the time dimension and converting to NetCDF4.
     Processing by this routine involves removing redundant dimensions, and removing bias from the ADC samples of the received I and Q.
     Metadata are added specific to the WIVERN-2 project ground-based observations collected in 2020-2021.
-    
+
     :param infile: Full path of NetCDF Level 0b data file, e.g. `<path-to-file>/radar-galileo_<YYYYddmmHHMMSS>-<YYYYddmmHHMMSS>_fix-ts.nc4`
     :type infile: str
-    
+
     :param outfile: Full path of NetCDF Level 0b output file, e.g. `<path-to-file>/ncas-radar-w-band-1_cao_20201210-212823_fix-ts_l1_v1.0.nc`
     :type outfile: str
 
-    :param dBZ_offset: dB calibration offset to apply to reflectivity.  This is converted to linear units and I and Q values are multiplied by the square root of this value.  
+    :param dBZ_offset: dB calibration offset to apply to reflectivity.  This is converted to linear units and I and Q values are multiplied by the square root of this value.
     :type dBZoffset: float
 
     :param range_offset: Range offset to apply in metres.
@@ -960,17 +960,17 @@ def convert_galileo_ts_l0b2l1(infile,outfile,dBZ_offset,range_offset,data_versio
     # -----------------------------------------------------
     # Read NetCDF spectra file with embedded IQ time series
     # -----------------------------------------------------
-    DSin = nc4.Dataset(infile);    
-    
+    DSin = nc4.Dataset(infile);
+
     dt_start = cftime.num2pydate(DSin['time'][0],DSin['time'].units)
     dt_end   = cftime.num2pydate(DSin['time'][-1],DSin['time'].units)
-    
+
     # -----------------------------
     # Set up NetCDF file for output
     # -----------------------------
     try: outfile.close()  # just to be safe, make sure dataset is not already open.
     except: pass
-    DSout = nc4.Dataset(outfile,mode='w',format='NETCDF4') 
+    DSout = nc4.Dataset(outfile,mode='w',format='NETCDF4')
     print(outfile)
 
     # ------------------------
@@ -978,7 +978,7 @@ def convert_galileo_ts_l0b2l1(infile,outfile,dBZ_offset,range_offset,data_versio
     # ------------------------
     DSout.product_version = "v{}".format(data_version);
     DSout.processing_level = "1" ;
-    
+
     DSout.licence = "Data usage licence - UK Open Government Licence agreement: \n http://www.nationalarchives.gov.uk/doc/open-government-licence" ;
     DSout.acknowledgement = "Acknowledgement is required of UK Research and Innovation as the data provider (in partnership with the National Centre for Atmospheric Science) whenever and wherever these data are used." ;
     DSout.platform = "Chilbolton Atmospheric Observatory" ;
@@ -999,18 +999,18 @@ def convert_galileo_ts_l0b2l1(infile,outfile,dBZ_offset,range_offset,data_versio
     DSout.project_principal_investigator = "Anthony Illingworth";
     DSout.project_principal_investigator_email = "a.j.illingworth@reading.ac.uk";
     DSout.project_principal_investigator_url = "https://orcid.org/0000-0002-5774-8410";
-    
+
     DSout.processing_software_url = "https://github.com/longlostjames/wivern_chilbolton_utils.git";
-    DSout.processing_software_version = "1.0"; 
-        
+    DSout.processing_software_version = "1.0";
+
     DSout.scantype = "vertical_pointing";
-    
+
     DSout.time_coverage_start = datetime.strftime(dt_start,'%Y-%m-%dT%H:%M:%SZ');
     DSout.time_coverage_end = datetime.strftime(dt_end,'%Y-%m-%dT%H:%M:%SZ');
     DSout.geospatial_bounds = "51.1450N -1.4384E";
-    
+
     DSout.pulse_compression = "false";
-    
+
     DSout.ADC_bits_per_sample = np.int(12);
     DSout.ADC_channels        = np.int(8);
 
@@ -1018,126 +1018,126 @@ def convert_galileo_ts_l0b2l1(infile,outfile,dBZ_offset,range_offset,data_versio
     # Scalar variables
     # ----------------
 
-    varout = DSout.createVariable('latitude','f4');    
+    varout = DSout.createVariable('latitude','f4');
     varout.standard_name = 'latitude';
     varout.long_name = 'latitude of the antenna';
     varout.units = 'degree_north';
     varout[:]=51.1447;
-    
-    varout = DSout.createVariable('longitude','f4');    
+
+    varout = DSout.createVariable('longitude','f4');
     varout.standard_name = 'longitude';
     varout.long_name = 'longitude of the antenna';
     varout.units = 'degree_east';
     varout[:]=-1.4385;
 
-    varout = DSout.createVariable('altitude','f4');    
+    varout = DSout.createVariable('altitude','f4');
     varout.standard_name = 'altitude';
     varout.long_name = 'altitude of the antenna above the geoid (WGS84)';
     varout.units = 'm';
     varout[:] = 131.6;
 
-    varout = DSout.createVariable('altitude_agl','f4');    
+    varout = DSout.createVariable('altitude_agl','f4');
     varout.long_name = 'altitude of the antenna above ground';
     varout.units = 'm';
     varout[:] = 0.9;
-    
-    varout = DSout.createVariable('frequency','f4');    
+
+    varout = DSout.createVariable('frequency','f4');
     varout.standard_name = 'radiation_frequency';
     varout.long_name = 'frequency of transmitted radiation';
     varout.units = 'GHz';
     varout[:]=94.008;
-  
+
     varin = DSin['prf'];
-    varout = DSout.createVariable('prf',varin.datatype);    
+    varout = DSout.createVariable('prf',varin.datatype);
     varout.long_name = 'pulse repetition frequency';
     varout.units = 'Hz';
     varout[:]=varin[:];
-    
+
     varin = DSin['beamwidthH'];
-    varout = DSout.createVariable('beamwidthH',varin.datatype);    
+    varout = DSout.createVariable('beamwidthH',varin.datatype);
     varout.long_name = 'horizontal angular beamwidth';
     varout.units = 'degree';
     varout[:]=varin[:];
-    
+
     varin = DSin['beamwidthV'];
-    varout = DSout.createVariable('beamwidthV',varin.datatype);    
+    varout = DSout.createVariable('beamwidthV',varin.datatype);
     varout.long_name = 'vertical angular beamwidth';
     varout.units = 'degree';
     varout[:]=varin[:];
-    
+
     varin = DSin['antenna_diameter'];
-    varout = DSout.createVariable('antenna_diameter',varin.datatype);    
+    varout = DSout.createVariable('antenna_diameter',varin.datatype);
     varout.long_name = 'antenna diameter';
     varout.units = 'm';
     varout.comment = "Refers to diameter of each antenna in bistatic pair.  Separation of antennae is 0.66m."
     varout[:] = varin[:];
 
-    varout = DSout.createVariable('antenna_focal_length','f4');    
+    varout = DSout.createVariable('antenna_focal_length','f4');
     varout.long_name = 'focal length of antenna';
     varout.units = 'm';
     varout[:] = 0.18;
-    
+
     varin = DSin['pulse_period'];
-    varout = DSout.createVariable('pulse_width',varin.datatype);    
+    varout = DSout.createVariable('pulse_width',varin.datatype);
     varout.long_name = 'pulse width';
     varout.units = 'us';
     varout[:] = varin[:];
 
     varin = DSin['transmit_power'];
-    varout = DSout.createVariable('transmit_power',varin.datatype);    
+    varout = DSout.createVariable('transmit_power',varin.datatype);
     varout.long_name = 'peak transmitted power';
     varout.units = 'W';
     varout[:] = varin[:];
-    
+
     varin = DSin['clock'];
-    varout = DSout.createVariable('clock',varin.datatype);    
+    varout = DSout.createVariable('clock',varin.datatype);
     varout.long_name = 'clock input to timer card';
     varout.units = 'Hz';
     varout[:] = varin[:];
-    
-    clock_divfactor = DSin['clock'].clock_divfactor; 
-    varout = DSout.createVariable('clock_divfactor','i4');    
+
+    clock_divfactor = DSin['clock'].clock_divfactor;
+    varout = DSout.createVariable('clock_divfactor','i4');
     varout.long_name = 'clock divide factor';
     varout.units = '1';
     varout[:]=clock_divfactor;
-    
+
     delay_clocks = DSin.getncattr('delay_clocks');
-    varout = DSout.createVariable('delay_clocks','i4');    
+    varout = DSout.createVariable('delay_clocks','i4');
     varout.long_name = 'clock cycles before sampling is initiated';
     varout.units = '1';
     varout[:] = delay_clocks;
-    
+
     samples_per_pulse = DSin.getncattr('samples_per_pulse');
-    varout = DSout.createVariable('samples_per_pulse','i4');    
+    varout = DSout.createVariable('samples_per_pulse','i4');
     varout.long_name = 'number of samples per pulse';
     varout.units = '1';
     varout[:] = samples_per_pulse;
 
     pulses_per_daq_cycle = DSin.getncattr('pulses_per_daq_cycle');
-    varout = DSout.createVariable('pulses_per_daq_cycle','i4');    
+    varout = DSout.createVariable('pulses_per_daq_cycle','i4');
     varout.long_name = 'number of pulses per data acquisition cycle';
     varout.units = '1';
     varout[:] = pulses_per_daq_cycle;
-    
+
     pulses_per_ray = DSin.getncattr('pulses_per_ray');
-    varout = DSout.createVariable('pulses_per_ray','i4');    
+    varout = DSout.createVariable('pulses_per_ray','i4');
     varout.long_name = 'number of pulses per ray';
     varout.units = '1';
     varout[:] = pulses_per_ray;
 
-    varout = DSout.createVariable('radar_constant','f4');    
+    varout = DSout.createVariable('radar_constant','f4');
     varout.long_name = 'radar constant';
     varout.units = 'dB';
-    
-    varout = DSout.createVariable('receiver_gain','f4');    
+
+    varout = DSout.createVariable('receiver_gain','f4');
     varout.long_name = 'receiver gain';
     varout.units = 'dB';
 
-    varout = DSout.createVariable('cable_losses','f4');    
+    varout = DSout.createVariable('cable_losses','f4');
     varout.long_name = 'cable losses';
     varout.units = 'dB';
 
-    varout = DSout.createVariable('extra_attenuation','f4');    
+    varout = DSout.createVariable('extra_attenuation','f4');
     varout.long_name = 'extra attenuation';
     varout.units = 'dB';
     varout[:] = 0.0;
@@ -1157,24 +1157,24 @@ def convert_galileo_ts_l0b2l1(infile,outfile,dBZ_offset,range_offset,data_versio
     DSout.createDimension('range', len(the_dim) if not the_dim.isunlimited() else None)
 
     print(DSout.dimensions['pulse']);
-    
+
     # --------------------
     # Coordinate variables
     # --------------------
     varin = DSin['time'];
-    varout = DSout.createVariable('time',varin.datatype,('time'));    
+    varout = DSout.createVariable('time',varin.datatype,('time'));
     varout.standard_name = 'time';
     varout.long_name = 'time at the start of each recorded ray';
     varout.units = varin.units;
     varout[:]=varin[:];
 
     varin = DSin['range'];
-    varout = DSout.createVariable('range',varin.datatype,('range'));    
+    varout = DSout.createVariable('range',varin.datatype,('range'));
     varout.long_name = 'distance from the antenna to the middle of each range gate';
     varout.range_offset_applied = np.float32(range_offset);
     varout.units = varin.units;
-    varout[:]=varin[:]+range_offset-varin.range_offset; 
-    
+    varout[:]=varin[:]+range_offset-varin.range_offset;
+
     # --------------------------
     # Antenna pointing variables
     # --------------------------
@@ -1182,7 +1182,7 @@ def convert_galileo_ts_l0b2l1(infile,outfile,dBZ_offset,range_offset,data_versio
     varout.long_name = 'elevation angle above the horizon of the plane containing the transmit and receive antenna boresights';
     varout.units = 'degree';
     varout.elevation_offset_applied = np.float32(0.);
-    
+
     varout = DSout.createVariable('azimuth','f4','time');
     varout.long_name = 'azimuth angle clockwise from grid north of the plane in which the antenna boresights are tilted away from zenith';
     varout.units = 'degree';
@@ -1213,7 +1213,7 @@ def convert_galileo_ts_l0b2l1(infile,outfile,dBZ_offset,range_offset,data_versio
 
     Ico[:,:,:] = Ico[:,:,:]-Ico_mean[:,None,:];
     Qco[:,:,:] = Qco[:,:,:]-Qco_mean[:,None,:];
-    
+
     Zcal=dBZ_offset+10*np.log10(DSout['prf'][:]/512);
 
     Ico=Ico*np.sqrt(10**(Zcal/10.0));
@@ -1235,7 +1235,7 @@ def convert_galileo_ts_l0b2l1(infile,outfile,dBZ_offset,range_offset,data_versio
     # Field variables
     # ---------------
 
-    varout = DSout.createVariable('I','f4',('time','pulse','range'),zlib=True);    
+    varout = DSout.createVariable('I','f4',('time','pulse','range'),zlib=True);
     varout.ancillary_variables = 'qc_flag';
     varout.long_name = 'co-polar in-phase video signal';
     varout.units = '1';
@@ -1245,10 +1245,10 @@ def convert_galileo_ts_l0b2l1(infile,outfile,dBZ_offset,range_offset,data_versio
 #    packed_data = np.int16(np.rint((Ico[:,:,:] - add_offset)/scale_factor));
     #varout.scale_factor = np.float32(scale_factor);
     #varout.add_offset = np.float32(add_offset);
-    #varout[:] = packed_data; 
+    #varout[:] = packed_data;
     varout[:] = Ico;
 
-    varout = DSout.createVariable('Q','f4',('time','pulse','range'),zlib=True);    
+    varout = DSout.createVariable('Q','f4',('time','pulse','range'),zlib=True);
     varout.ancillary_variables = 'qc_flag';
     varout.long_name = 'cross-polar quadrature video signal';
     varout.units = '1';
@@ -1261,7 +1261,7 @@ def convert_galileo_ts_l0b2l1(infile,outfile,dBZ_offset,range_offset,data_versio
     #varout[:] = packed_data;
     varout[:] = Qco;
 
-    varout = DSout.createVariable('Icx','f4',('time','pulse','range'),zlib=True);    
+    varout = DSout.createVariable('Icx','f4',('time','pulse','range'),zlib=True);
     varout.ancillary_variables = 'qc_flag';
     varout.long_name = 'cross-polar in-phase video signal';
     varout.units = '1';
@@ -1274,7 +1274,7 @@ def convert_galileo_ts_l0b2l1(infile,outfile,dBZ_offset,range_offset,data_versio
 #    varout[:] = packed_data;
     varout[:] = Icx;
 
-    varout = DSout.createVariable('Qcx','f4',('time','pulse','range'),zlib=True);    
+    varout = DSout.createVariable('Qcx','f4',('time','pulse','range'),zlib=True);
     varout.ancillary_variables = 'qc_flag';
     varout.long_name = 'cross-polar quadrature video signal';
     varout.units = '1';
@@ -1314,16 +1314,16 @@ def process_wivern2_camra_ts(datestr,inpath,outpath):
     for root,dirs,files in os.walk(datepath):
         tsfiles += [os.path.join(root,f) for f in fnmatch.filter(files, pattern)];
         tsdirs += dirs;
-        
+
     data_version = "1.0";
 
     dBZ_offset = 9.0;
     ZDR_offset = 0.6;
-    range_offset = -865.56+864.0;     
-    
+    range_offset = -865.56+864.0;
+
     l0bpath = os.path.join(outpath,'L0b',datestr);
     l1path = os.path.join(outpath,'L1',datestr);
-    
+
     os.makedirs(l0bpath,exist_ok=True);
     os.makedirs(l1path,exist_ok=True);
 
@@ -1346,7 +1346,7 @@ def process_wivern2_camra_ts(datestr,inpath,outpath):
         l0bfile = '{}_{}_{}-{}_{}_{}_v{}.nc'.format(instrument_name,platform,datestr,timestr,splits[2],level,data_version)
 
         l0bfile.replace('radar-camra','ncas-radar-camra-1_cao');
-        
+
         event = outfile_splits[0].split('/')[-1];
 
         if not event in tsdirs:
@@ -1380,14 +1380,14 @@ def process_wivern2_copernicus_ts(datestr,inpath,outpath):
     for root,dirs,files in os.walk(datepath):
         tsfiles += [os.path.join(root,f) for f in fnmatch.filter(files, pattern)];
         tsdirs += dirs;
-        
+
     data_version = "1.0";
 
     dBZ_offset = -147.8+115;
     range_offset = -645.0;
-    
+
     l1path = os.path.join(outpath,'L1',datestr);
-    
+
     os.makedirs(l1path,exist_ok=True);
 
     print(tsdirs);
@@ -1435,16 +1435,16 @@ def process_wivern2_galileo_ts(datestr,inpath,outpath):
     for root,dirs,files in os.walk(datepath):
         tsfiles += [os.path.join(root,f) for f in fnmatch.filter(files, pattern)];
         tsdirs += dirs;
-        
+
     print(tsfiles);
 
     data_version = "1.0";
 
     dBZ_offset = -167.0+111.5;
-    range_offset = -330.0;     
-    
+    range_offset = -330.0;
+
     l1path = os.path.join(outpath,'L1',datestr);
-    
+
     os.makedirs(l1path,exist_ok=True);
 
     print(tsdirs);
@@ -1464,7 +1464,7 @@ def process_wivern2_galileo_ts(datestr,inpath,outpath):
         timestr = datestr0[8:];
         level = splits[3].split('.')[0];
         l1file = '{}_{}_{}-{}_{}_{}_v{}.nc'.format(instrument_name,platform,datestr,timestr,'fix-ts',level,data_version)
-        
+
         event = outfile_splits[0].split('/')[-1];
 
         if not event in tsdirs:

@@ -9,6 +9,8 @@ always try `these example files <http://lake.fmi.fi/cloudnet-public/cloudnetpy_t
 Radar processing
 ----------------
 
+Conversion routines to generate Level 1 data ``wivern2_camra.py``
+
 In the first example we convert a raw METEK MIRA-36 cloud radar file into
 Cloudnet netCDF file that can be used in further processing steps.
 
