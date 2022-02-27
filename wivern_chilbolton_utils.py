@@ -7,7 +7,7 @@
 # ESA WIVERN-2 project in 2020-2021.
 # Author: Chris Walden, UK Research & Innovation and
 #                       National Centre for Atmospheric Science
-# Last modified: 04-02-2022
+# Last modified: 27-02-2022
 # ==========================================================================
 
 """Module for processing raw radar data from CAMRa (3GHz), Copernicus (35GHz)
@@ -436,6 +436,35 @@ def convert_camra_ts_l0a2l0b(infile,outfile):
     DSout.close();
 
     return
+
+def update_licensing(l1file):
+
+    """This routine updates the licence to CC-BY-4.0.
+
+    :param l1file: Full path of NetCDF Level 1 file, `<path-to-file>/ncas-radar-camra-1_cao_20201210-212823_fix-ts_l1_v1.0.nc`
+    :type infile: str
+    """
+
+    # ---------------------------
+    # Open NetCDF file for update
+    # ---------------------------
+    DS = nc4.Dataset(l1file,mode='r+',format='NETCDF4')
+
+    DS.licence = "This dataset is released for use under CC-BY licence (https://creativecommons.org/licenses/by/4.0/) and was developed as part of the activity \"Doppler Wind Radar Science Performance Study (WIVERN-2)\", funded by the European Space Agency under Contract no. 4000130864/20/NL/CT."
+    DS.acknowledgement = "Acknowledgement is required of fuuding from the European Space Agency, and of UK Research and Innovation as the data provider (in partnership with the National Centre for Atmospheric Science) whenever and wherever these data are used" ;
+
+    history = updttimestr + (" - user:" + user
+    + " machine: " + socket.gethostname()
+    + " program: wivern_chilbolton_utils.py update_licensing.py"
+    + " version:" + str(module_version));
+
+    print(history);
+
+    DS.history = history + "\n" + DS.history;
+
+    DS.close();
+
+
 
 def convert_camra_ts_l0b2l1(infile,outfile,dBZh_offset,ZDR_offset,range_offset,version):
 
