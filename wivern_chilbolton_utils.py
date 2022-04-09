@@ -7,7 +7,7 @@
 # ESA WIVERN-2 project in 2020-2021.
 # Author: Chris Walden, UK Research & Innovation and
 #                       National Centre for Atmospheric Science
-# Last modified: 27-02-2022
+# Last modified: 03-04-2022
 # ==========================================================================
 
 """Module for processing raw radar data from CAMRa (3GHz), Copernicus (35GHz)
@@ -74,8 +74,10 @@ def convert_camra_ts_l0a2l0b(infile,outfile):
     DSout.product_version = "v1.0" ;
     DSout.processing_level = "0b" ;
 
-    DSout.licence = "Data usage licence - UK Open Government Licence agreement: \n http://www.nationalarchives.gov.uk/doc/open-government-licence" ;
-    DSout.acknowledgement = "Acknowledgement is required of UK Research and Innovation as the data provider (in partnership with the National Centre for Atmospheric Science) whenever and wherever these data are used." ;
+    DSout.licence = "This dataset is released for use under a Creative Commons Attribution 4.0 International (CC-BY 4.0) license (see https://creativecommons.org/licenses/by/4.0/ for terms and conditions)."
+#    DSout.licence = "Data usage licence - UK Open Government Licence agreement: \n http://www.nationalarchives.gov.uk/doc/open-government-licence" ;
+    DSout.acknowledgement = "This dataset was developed as part of the activity \"Doppler Wind Radar Science Performance Study (WIVERN-2)\", funded by the European Space Agency under Contract no. 4000130864/20/NL/CT.  Users should acknowledge UK Research and Innovation as the data provider (in partnership with the National Centre for Atmospheric Science)." ;
+#    DSout.acknowledgement = "Acknowledgement is required of UK Research and Innovation as the data provider (in partnership with the National Centre for Atmospheric Science) whenever and wherever these data are used." ;
     DSout.platform = "Chilbolton Atmospheric Observatory" ;
     DSout.platform_type = "stationary_platform" ;
     DSout.title = "Time series from 3 GHz CAMRa radar collected for ESA WIVERN-2 campaign at Chilbolton Observatory";
@@ -439,7 +441,7 @@ def convert_camra_ts_l0a2l0b(infile,outfile):
 
 def update_licensing(l1file):
 
-    """This routine updates the licence to CC-BY-4.0.
+    """This routine updates the licence to Creative Commons Attribution 4.0 International (CC-BY 4.0).
 
     :param l1file: Full path of NetCDF Level 1 file, `<path-to-file>/ncas-radar-camra-1_cao_20201210-212823_fix-ts_l1_v1.0.nc`
     :type infile: str
@@ -450,8 +452,13 @@ def update_licensing(l1file):
     # ---------------------------
     DS = nc4.Dataset(l1file,mode='r+',format='NETCDF4')
 
-    DS.licence = "This dataset is released for use under CC-BY licence (https://creativecommons.org/licenses/by/4.0/) and was developed as part of the activity \"Doppler Wind Radar Science Performance Study (WIVERN-2)\", funded by the European Space Agency under Contract no. 4000130864/20/NL/CT."
-    DS.acknowledgement = "Acknowledgement is required of fuuding from the European Space Agency, and of UK Research and Innovation as the data provider (in partnership with the National Centre for Atmospheric Science) whenever and wherever these data are used" ;
+    DS.licence = "This dataset is released for use under a Creative Commons Attribution 4.0 International (CC-BY 4.0) license (see https://creativecommons.org/licenses/by/4.0/ for terms and conditions)."
+    DS.acknowledgement = "This dataset was developed as part of the activity \"Doppler Wind Radar Science Performance Study (WIVERN-2)\", funded by the European Space Agency under Contract no. 4000130864/20/NL/CT.  Users should acknowledge UK Research and Innovation as the data provider (in partnership with the National Centre for Atmospheric Science)." ;
+
+    user = getpass.getuser()
+
+    updttime = datetime.utcnow()
+    updttimestr = updttime.ctime()
 
     history = updttimestr + (" - user:" + user
     + " machine: " + socket.gethostname()
@@ -461,6 +468,315 @@ def update_licensing(l1file):
     print(history);
 
     DS.history = history + "\n" + DS.history;
+
+    DS.last_revised_date = datetime.strftime(updttime,'%Y-%m-%dT%H:%M:%SZ')
+
+    DS.close();
+
+def update_copernicus_azimuth_attributes(l1file):
+
+    """This routine updates the attributes of the azimuth for 35GHz Copernicus radar data.
+
+    :param l1file: Full path of NetCDF Level 1 file, `<path-to-file>/ncas-radar-ka-band-1_cao_20201210-21282323_fix-ts_l1_v1.0.nc`
+    :type infile: str
+    """
+
+    # ---------------------------
+    # Open NetCDF file for update
+    # ---------------------------
+    DS = nc4.Dataset(l1file,mode='r+',format='NETCDF4')
+
+    DS['azimuth'].long_name = "azimuth angle from grid north of the plane containing the antenna boresight and zenith vectors"
+
+    user = getpass.getuser()
+
+    updttime = datetime.utcnow()
+    updttimestr = updttime.ctime()
+
+    history = updttimestr + (" - user:" + user
+    + " machine: " + socket.gethostname()
+    + " program: wivern_chilbolton_utils.py update_copernicus_azimuth_attributes.py"
+    + " version:" + str(module_version));
+
+    print(history);
+
+    DS.history = history + "\n" + DS.history;
+
+    DS.last_revised_date = datetime.strftime(updttime,'%Y-%m-%dT%H:%M:%SZ')
+
+    DS.close();
+
+def update_galileo_pointing_attributes(l1file):
+
+    """This routine updates the attributes of the elevation and azimuth for 94GHz Galileo radar data.
+
+    :param l1file: Full path of NetCDF Level 1 file, `<path-to-file>/ncas-radar-w-band-1_cao_20201210-212823_fix-ts_l1_v1.0.nc`
+    :type infile: str
+    """
+
+    # ---------------------------
+    # Open NetCDF file for update
+    # ---------------------------
+    DS = nc4.Dataset(l1file,mode='r+',format='NETCDF4')
+
+    DS['azimuth'].long_name   = "azimuth angle from grid north of the plane containing the antenna boresight and zenith vectors"
+    DS['azimuth'].comment     = "assumes transmit and receive antenna boresights are aligned"
+    DS['elevation'].long_name = "elevation angle above the horizon of the antenna boresight"
+    DS['elevation'].comment   = "assumes transmit and receive antenna boresights are aligned"
+
+    user = getpass.getuser()
+
+    updttime = datetime.utcnow()
+    updttimestr = updttime.ctime()
+
+    history = updttimestr + (" - user:" + user
+    + " machine: " + socket.gethostname()
+    + " program: wivern_chilbolton_utils.py update_galileo_pointing_attributes.py"
+    + " version:" + str(module_version));
+
+    print(history);
+
+    DS.history = history + "\n" + DS.history;
+
+    DS.last_revised_date = datetime.strftime(updttime,'%Y-%m-%dT%H:%M:%SZ')
+
+    DS.close();
+
+def encode_antenna_mispointing(l1file,elevation_offset,azimuth):
+
+    """This routine updates the elevation and azimuth to account for antenna mispointing.
+
+    :param l1file: Full path of NetCDF Level 1 file, `<path-to-file>/ncas-radar-w-band-1_cao_20201210-212823_fix-ts_l1_v1.0.nc`
+    :type infile: str
+
+    :param elevation_offset: angle between boresight and zenith in degrees.
+    :type elevation_offset: float
+
+    :param azimuth: azimuth angle from grid north of the plane containing the antenna boresight and zenith vectors
+    :type azimuth: float
+    """
+
+    # ---------------------------
+    # Open NetCDF file for update
+    # ---------------------------
+    DS = nc4.Dataset(l1file,mode='r+',format='NETCDF4')
+
+    DS['azimuth'][:] = azimuth;
+    DS['azimuth'].comment = "Azimuths are specifed to the nearest cardinal, primary or secondary intercardinal compass bearing (i.e. N, NE, NNE etc.). Values are derived from analysis by John Nicol (john@weatherradar.co.nz) of Doppler returns from thin ice at the tops of clouds that have negligible velocity, and measuring the apparent velocity induced by strong winds that change direction over a period of several hours. The speed and direction of the winds at the appropriate height are taken from ECMWF (European Centre for Medium-Range Weather Forecasts) model data."
+    DS['elevation'][:] = 90.0 - elevation_offset;
+    DS['elevation'].comment = "Antenna mispointing results in elevations below 90 degrees. Values are derived from analysis by John Nicol (john@weatherradar.co.nz) of Doppler returns from thin ice at the tops of clouds that have negligible velocity, and measuring the apparent velocity induced by strong winds that change direction over a period of several hours. The speed and direction of the winds at the appropriate height are taken from ECMWF (European Centre for Medium-Range Weather Forecasts) model data."
+
+
+    user = getpass.getuser()
+
+    updttime = datetime.utcnow()
+    updttimestr = updttime.ctime()
+
+    history = updttimestr + (" - user:" + user
+    + " machine: " + socket.gethostname()
+    + " program: wivern_chilbolton_utils.py encode_antenna_mispointing.py"
+    + " version:" + str(module_version));
+
+    print(history);
+
+    DS.history = history + "\n" + DS.history;
+
+    DS.last_revised_date = datetime.strftime(updttime,'%Y-%m-%dT%H:%M:%SZ')
+
+    DS.close();
+
+
+def encode_dBZ_offset(l1file,dBZ_offset):
+
+    """This routine creates a dBZ_offset variable to store the offset.  It assumes this offset has already been applied.  Note: the routine assumes an additional offset of 10log10(PRF/512) will be added, so this should not be included when caling this function.
+
+    :param l1file: Full path of NetCDF Level 1 file, `<path-to-file>/ncas-radar-w-band-1_cao_20201210-212823_fix-ts_l1_v1.0.nc`
+    :type infile: str
+
+    :param dBZ_offset: value of dBZ offset already applied.
+    :type elevation_offset: float
+    """
+
+    # ---------------------------
+    # Open NetCDF file for update
+    # ---------------------------
+    DS = nc4.Dataset(l1file,mode='r+',format='NETCDF4')
+
+    if not 'dBZ_offset' in DS.variables.keys():
+        varout = DS.createVariable('dBZ_offset','f4');
+        varout.long_name = 'dBZ offset applied';
+        varout.comment = 'When converted to linear units this is included in the linear reflectivity factor.  The square root of the latter is used to scale the I and Q values.';
+
+        Zcal=dBZ_offset+10*np.log10(DS['prf'][:]/512);
+        varout[:] = Zcal;
+
+        user = getpass.getuser()
+
+        updttime = datetime.utcnow()
+        updttimestr = updttime.ctime()
+
+        history = updttimestr + (" - user:" + user
+                                 + " machine: " + socket.gethostname()
+                                 + " program: wivern_chilbolton_utils.py encode_dBZ_offset.py"
+                                 + " version:" + str(module_version));
+
+        print(history);
+
+        DS.history = history + "\n" + DS.history;
+
+        DS.last_revised_date = datetime.strftime(updttime,'%Y-%m-%dT%H:%M:%SZ')
+
+    else:
+        print('dBZ_offset variable already exists');
+
+    DS.close();
+
+
+def adjust_range_offset(l1file,delta_range):
+
+    """This routine updates the range offset
+
+    :param l1file: Full path of NetCDF Level 1 file, `<path-to-file>/ncas-radar-camra-1_cao_20201210-212823_fix-ts_l1_v1.0.nc`
+    :type l1file: str
+
+    :param delta_range: increment to be added to range in metres
+    :type delta_range: float
+    """
+
+    # ---------------------------
+    # Open NetCDF file for update
+    # ---------------------------
+    DS = nc4.Dataset(l1file,mode='r+',format='NETCDF4')
+
+    DS['range'][:] += delta_range;
+    DS['range'].range_offset_applied += delta_range;
+
+    user = getpass.getuser()
+
+    updttime = datetime.utcnow()
+    updttimestr = updttime.ctime()
+
+    history = updttimestr + (" - user:" + user
+    + " machine: " + socket.gethostname()
+    + " program: wivern_chilbolton_utils.py adjust_range_offset"
+    + " version:" + str(module_version));
+
+    print(history);
+
+    DS.history = history + "\n" + DS.history;
+
+    DS.last_revised_date = datetime.strftime(updttime,'%Y-%m-%dT%H:%M:%SZ')
+
+    DS.close();
+
+def flag_bad_ray(l1file,ray):
+
+    """This routine flags individual rays as bad data
+
+    :param l1file: Full path of NetCDF Level 1 file, `<path-to-file>/ncas-radar-camra-1_cao_20201210-212823_fix-ts_l1_v1.0.nc`
+    :type l1file: str
+
+    :param ray: index of ray to be flagged
+    :type ray: int
+    """
+
+    # ---------------------------
+    # Open NetCDF file for update
+    # ---------------------------
+    DS = nc4.Dataset(l1file,mode='r+',format='NETCDF4')
+
+    DS['qc_flag'][ray,:,:] = 3;
+
+    user = getpass.getuser()
+
+    updttime = datetime.utcnow()
+    updttimestr = updttime.ctime()
+
+    history = updttimestr + (" - user:" + user
+    + " machine: " + socket.gethostname()
+    + " program: wivern_chilbolton_utils.py flag_bad_ray {}".format(ray)
+    + " version:" + str(module_version));
+
+    print(history);
+
+    DS.history = history + "\n" + DS.history;
+
+    DS.last_revised_date = datetime.strftime(updttime,'%Y-%m-%dT%H:%M:%SZ')
+
+    DS.close();
+
+def correct_flagged_ray(l1file,ray):
+
+    """This routine corrects a ray erroneously flagged as bad data
+
+    :param l1file: Full path of NetCDF Level 1 file, `<path-to-file>/ncas-radar-camra-1_cao_20201210-212823_fix-ts_l1_v1.0.nc`
+    :type l1file: str
+
+    :param ray: index of ray to have flag corrected
+    :type ray: int
+    """
+
+    # ---------------------------
+    # Open NetCDF file for update
+    # ---------------------------
+    DS = nc4.Dataset(l1file,mode='r+',format='NETCDF4')
+
+    DS['qc_flag'][ray,:,:] = 2;
+    blind_range = np.arange(15);
+    DS['qc_flag'][ray,:,blind_range] = 4;
+
+    user = getpass.getuser()
+
+    updttime = datetime.utcnow()
+    updttimestr = updttime.ctime()
+
+    history = updttimestr + (" - user:" + user
+    + " machine: " + socket.gethostname()
+    + " program: wivern_chilbolton_utils.py correct_flagged_ray {}".format(ray)
+    + " version:" + str(module_version));
+
+    print(history);
+
+    DS.history = history + "\n" + DS.history;
+
+    DS.last_revised_date = datetime.strftime(updttime,'%Y-%m-%dT%H:%M:%SZ')
+
+    DS.close();
+
+def update_copernicus_location(l1file):
+
+    """This routine updates the latitude, longitude and altitude for the Copernicus radar
+
+    :param l1file: Full path of NetCDF Level 1 file, `<path-to-file>/ncas-radar-camra-1_cao_20201210-212823_fix-ts_l1_v1.0.nc`
+    :type infile: str
+    """
+
+    # ---------------------------
+    # Open NetCDF file for update
+    # ---------------------------
+    DS = nc4.Dataset(l1file,mode='r+',format='NETCDF4')
+
+    DS.geospatial_bounds = "51.1447N -1.4384E";
+
+    DS['latitude'][:] = 51.1447;
+    DS['longitude'][:] = -1.4384;
+    DS['altitude'][:] = 130.7 + DS['altitude_agl'][:];
+
+    user = getpass.getuser()
+
+    updttime = datetime.utcnow()
+    updttimestr = updttime.ctime()
+
+    history = updttimestr + (" - user:" + user
+    + " machine: " + socket.gethostname()
+    + " program: wivern_chilbolton_utils.py update_copernicus_location"
+    + " version:" + str(module_version));
+
+    print(history);
+
+    DS.history = history + "\n" + DS.history;
+
+    DS.last_revised_date = datetime.strftime(updttime,'%Y-%m-%dT%H:%M:%SZ')
 
     DS.close();
 
@@ -646,19 +962,22 @@ def convert_camra_ts_l0b2l1(infile,outfile,dBZh_offset,ZDR_offset,range_offset,v
     DSout['range'].range_offset_applied += range_offset;
     DSout['range'].comment = "range_offset_applied includes offset applied by the data acquisition program";
 
-    user = getpass.getuser();
+    # -----------------------
+    # Update history metadata
+    # -----------------------
+    user = getpass.getuser()
 
-    updttime = datetime.utcnow();
-    updttimestr = updttime.ctime();
+    updttime = datetime.utcnow()
+    updttimestr = updttime.ctime()
 
     history = updttimestr + (" - user:" + user
     + " machine: " + socket.gethostname()
     + " program: wivern_chilbolton_utils.py convert_camra_ts_l0b2l1"
     + " version:" + str(module_version));
 
-    print(history);
-
     DSout.history = history + "\n" + DSin.history;
+
+    DSout.last_revised_date = datetime.strftime(updttime,'%Y-%m-%dT%H:%M:%SZ')
 
     DSin.close();
     DSout.close();
@@ -678,7 +997,7 @@ def convert_copernicus_ts_l0a2l1(infile,outfile,dBZ_offset,range_offset,data_ver
     :type outfile: str
 
     :param dBZ_offset: dB calibration offset to apply to reflectivity.  This is converted to linear units and I and Q values are multiplied by the square root of this value.
-    :type dBZoffset: float
+    :type dBZ_offset: float
 
     :param range_offset: Range offset to apply in m.
     :type range_offset: float
@@ -718,8 +1037,10 @@ def convert_copernicus_ts_l0a2l1(infile,outfile,dBZ_offset,range_offset,data_ver
     DSout.product_version = "v{}".format(data_version);
     DSout.processing_level = "1" ;
 
-    DSout.licence = "Data usage licence - UK Open Government Licence agreement: \n http://www.nationalarchives.gov.uk/doc/open-government-licence" ;
-    DSout.acknowledgement = "Acknowledgement is required of UK Research and Innovation as the data provider (in partnership with the National Centre for Atmospheric Science) whenever and wherever these data are used." ;
+    DSout.licence = "This dataset is released for use under a Creative Commons Attribution 4.0 International (CC-BY 4.0) license (see https://creativecommons.org/licenses/by/4.0/ for terms and conditions)."
+#    DSout.licence = "Data usage licence - UK Open Government Licence agreement: \n http://www.nationalarchives.gov.uk/doc/open-government-licence" ;
+    DSout.acknowledgement = "This dataset was developed as part of the activity \"Doppler Wind Radar Science Performance Study (WIVERN-2)\", funded by the European Space Agency under Contract no. 4000130864/20/NL/CT.  Users should acknowledge UK Research and Innovation as the data provider (in partnership with the National Centre for Atmospheric Science)." ;
+#    DSout.acknowledgement = "Acknowledgement is required of UK Research and Innovation as the data provider (in partnership with the National Centre for Atmospheric Science) whenever and wherever these data are used." ;
     DSout.platform = "Chilbolton Atmospheric Observatory" ;
     DSout.platform_type = "stationary_platform" ;
     DSout.title = "Time series from 35 GHz Copernicus radar collected for ESA WIVERN-2 campaign at Chilbolton Observatory";
@@ -746,7 +1067,7 @@ def convert_copernicus_ts_l0a2l1(infile,outfile,dBZ_offset,range_offset,data_ver
 
     DSout.time_coverage_start = datetime.strftime(dt_start,'%Y-%m-%dT%H:%M:%SZ');
     DSout.time_coverage_end = datetime.strftime(dt_end,'%Y-%m-%dT%H:%M:%SZ');
-    DSout.geospatial_bounds = "51.1450N -1.4384E";
+    DSout.geospatial_bounds = "51.1447N -1.4384E";
 
     DSout.pulse_compression = "false";
 
@@ -761,7 +1082,7 @@ def convert_copernicus_ts_l0a2l1(infile,outfile,dBZ_offset,range_offset,data_ver
     varout.standard_name = 'latitude';
     varout.long_name = 'latitude of the antenna';
     varout.units = 'degree_north';
-    varout[:]=51.1450;
+    varout[:]=51.1447;
 
     varout = DSout.createVariable('longitude','f4');
     varout.standard_name = 'longitude';
@@ -778,6 +1099,8 @@ def convert_copernicus_ts_l0a2l1(infile,outfile,dBZ_offset,range_offset,data_ver
     varout.long_name = 'altitude of the antenna above ground';
     varout.units = 'm';
     varout[:] = 1.9;
+
+    DSout['altitude'][:] = 130.7 + DSout['altitude_agl'][:];
 
     varout = DSout.createVariable('frequency','f4');
     varout.standard_name = 'radiation_frequency';
@@ -961,6 +1284,27 @@ def convert_copernicus_ts_l0a2l1(infile,outfile,dBZ_offset,range_offset,data_ver
     blind_range = np.arange(15);
     DSout['qc_flag'][:,:,blind_range] = 4;
 
+    # -----------------------
+    # Update history metadata
+    # -----------------------
+    user = getpass.getuser();
+
+    updttime = datetime.utcnow();
+    updttimestr = updttime.ctime();
+
+    history = updttimestr + (" - user:" + user
+    + " machine: " + socket.gethostname()
+    + " program: wivern_chilbolton_utils.py convert_copernicus_ts_l0a2l1"
+    + " version:" + str(module_version));
+
+    print(history);
+
+    DSout.history = history;
+
+    DSout.last_revised_date = datetime.strftime(updttime,'%Y-%m-%dT%H:%M:%SZ')
+
+    DSout.close();
+
     return
 
 def convert_galileo_ts_l0b2l1(infile,outfile,dBZ_offset,range_offset,data_version):
@@ -1008,8 +1352,10 @@ def convert_galileo_ts_l0b2l1(infile,outfile,dBZ_offset,range_offset,data_versio
     DSout.product_version = "v{}".format(data_version);
     DSout.processing_level = "1" ;
 
-    DSout.licence = "Data usage licence - UK Open Government Licence agreement: \n http://www.nationalarchives.gov.uk/doc/open-government-licence" ;
-    DSout.acknowledgement = "Acknowledgement is required of UK Research and Innovation as the data provider (in partnership with the National Centre for Atmospheric Science) whenever and wherever these data are used." ;
+    DSout.licence = "This dataset is released for use under a Creative Commons Attribution 4.0 International (CC-BY 4.0) license (see https://creativecommons.org/licenses/by/4.0/ for terms and conditions)."
+#    DSout.licence = "Data usage licence - UK Open Government Licence agreement: \n http://www.nationalarchives.gov.uk/doc/open-government-licence" ;
+    DSout.acknowledgement = "This dataset was developed as part of the activity \"Doppler Wind Radar Science Performance Study (WIVERN-2)\", funded by the European Space Agency under Contract no. 4000130864/20/NL/CT.  Users should acknowledge UK Research and Innovation as the data provider (in partnership with the National Centre for Atmospheric Science)." ;
+#    DSout.acknowledgement = "Acknowledgement is required of UK Research and Innovation as the data provider (in partnership with the National Centre for Atmospheric Science) whenever and wherever these data are used." ;
     DSout.platform = "Chilbolton Atmospheric Observatory" ;
     DSout.platform_type = "stationary_platform" ;
     DSout.title = "Time series from 94 GHz Galileo radar collected for ESA WIVERN-2 campaign at Chilbolton Observatory";
@@ -1036,7 +1382,7 @@ def convert_galileo_ts_l0b2l1(infile,outfile,dBZ_offset,range_offset,data_versio
 
     DSout.time_coverage_start = datetime.strftime(dt_start,'%Y-%m-%dT%H:%M:%SZ');
     DSout.time_coverage_end = datetime.strftime(dt_end,'%Y-%m-%dT%H:%M:%SZ');
-    DSout.geospatial_bounds = "51.1450N -1.4384E";
+    DSout.geospatial_bounds = "51.1447N -1.4384E";
 
     DSout.pulse_compression = "false";
 
@@ -1327,6 +1673,26 @@ def convert_galileo_ts_l0b2l1(infile,outfile,dBZ_offset,range_offset,data_versio
     blind_range = np.arange(14);
     DSout['qc_flag'][:,:,blind_range] = 4;
 
+    # -----------------------
+    # Update history metadata
+    # -----------------------
+    user = getpass.getuser()
+
+    updttime = datetime.utcnow()
+    updttimestr = updttime.ctime()
+
+    history = updttimestr + (" - user:" + user
+    + " machine: " + socket.gethostname()
+    + " program: wivern_chilbolton_utils.py convert_galileo_ts_l0b2l1"
+    + " version:" + str(module_version));
+
+    DSout.history = history + "\n" + DSin.history;
+
+    DSout.last_revised_date = datetime.strftime(updttime,'%Y-%m-%dT%H:%M:%SZ')
+
+    DSin.close();
+    DSout.close();
+
     return
 
 def process_wivern2_camra_ts(datestr,inpath,outpath):
@@ -1506,3 +1872,6 @@ def process_wivern2_galileo_ts(datestr,inpath,outpath):
         convert_galileo_ts_l0b2l1(f,l1file,dBZ_offset,range_offset,data_version);
 
     return
+
+
+
