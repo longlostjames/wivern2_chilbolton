@@ -7,19 +7,16 @@
 wivern2_chilbolton documentation
 ================================
 
-Documentation for wivern2_chilbolton, a set of Python routines 
+Documentation for wivern2_chilbolton, a set of Python routines
 for processing Chilbolton radar data from the WIVERN-2 campaign.
 
 .. toctree::
    :maxdepth: 4
 
    overview
-   installation
-   quickstart
-   api
    fileformat
-   guide
-
+   processing_software
+   
 
 
 Indices and tables

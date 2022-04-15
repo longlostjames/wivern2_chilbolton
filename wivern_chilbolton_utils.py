@@ -38,7 +38,88 @@ from matplotlib import colors
 import cmocean
 
 
+# =================
+# UTILITY FUNCTIONS
+# =================
 
+def split_ncfile(filename,outpath,nray):
+
+    """This routine splits NetCDF format files into smaller files by dividing
+    them along the time dimension, i.e. splitting them into files each with a
+    target number of rays.
+
+    :param filename: Full path of NetCDF file, e.g. `<path-to-file>/radar-galileo_20201210212823_fix-ts.nc`
+    :type infile: str
+
+    :param outpath: Full path of directory to be used for output files
+    :type outfile: str
+
+    :param nray: Target number of rays in each output file
+    :type nray: int
+    """
+
+
+    file_dtstr = filename.split("_")[1]
+
+    print(filename);
+    print(file_dtstr);
+    DS = nc4.Dataset(filename);
+
+    nraytotal = int(DS['time'][:].shape[0]);
+    print(nraytotal);
+
+
+    for i in np.arange(0,nraytotal,nray,dtype=int):
+        dtime  = cftime.num2date(DS['time'][i],DS['time'].units)
+        dtime0 = dtime.replace(microsecond=0);
+        imin = i;
+        imax = np.min([imin+nray-1,nraytotal-1]);
+        dtime  = cftime.num2date(DS['time'][imax],DS['time'].units)
+        dtime1 = dtime.replace(microsecond=0)+datetime.timedelta(seconds=1)
+        print(dtime0,dtime1)
+        dtstr0 = cftime.datetime.strftime(dtime0,'%Y%m%d%H%M%S')
+        dtstr1 = cftime.datetime.strftime(dtime1,'%Y%m%d%H%M%S')
+        print(dtstr0)
+        outfile = filename.replace(file_dtstr,dtstr0+'-'+dtstr1)
+        outfile = outfile.replace('nc','nc4');
+        outfile = os.path.join(outpath,outfile);
+        print(outfile);
+
+        optstr = "-4 -L 1 -d time,{},{}".format(imin,imax);
+        nco.ncks(input=filename, output=outfile, options=[optstr]);
+    DS.close()
+
+def trim_ncfile(filename,outpath,ray_start,ray_end):
+
+    """This routine trims NetCDF format files in the time dimension.
+
+    :param filename: Full path of NetCDF file, e.g. `<path-to-file>/radar-galileo_20201210212823_fix-ts.nc`
+    :type infile: str
+
+    :param outpath: Full path of directory to be used for output files
+    :type outfile: str
+
+    :param ray_start: First ray (i.e. time index) to be included in the output file
+    :type ray_start: int
+
+    :param ray_end: Last ray (i.e. time index) to be included in the output file
+    :type ray_end: int
+    """
+
+    file_dtstr = filename.split("_")[1]
+
+    print(filename);
+    print(file_dtstr);
+    DS = nc4.Dataset(filename);
+
+    outfile = filename.replace(file_dtstr,file_dtstr+'-rev1')
+    outfile = os.path.join(outpath,outfile);
+    print(outfile);
+
+    optstr = "-d time,{},{}".format(ray_start,ray_end);
+    nco.ncks(input=filename, output=outfile, options=[optstr]);
+
+    DS.close()
 
 # ===================
 # CONVERSION ROUTINES
@@ -1872,6 +1953,3 @@ def process_wivern2_galileo_ts(datestr,inpath,outpath):
         convert_galileo_ts_l0b2l1(f,l1file,dBZ_offset,range_offset,data_version);
 
     return
-
-
-

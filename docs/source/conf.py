@@ -14,13 +14,15 @@
 #
 import os
 import sys
+
+
 sys.path.insert(0, os.path.abspath('../..'))
 #sys.path.insert(0, os.path.abspath('../../cloudnetpy/'))
 
 
 # -- Project information -----------------------------------------------------
 
-project = 'wivern2_chilbolton'
+project = 'wivern2-chilbolton'
 copyright = '2022, UK Research and Innovation'
 author = 'Chris Walden'
 
@@ -152,7 +154,7 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    (master_doc, 'wivern2_chilbolton.tex', 'wivern2_chilbolton Documentation',
+    (master_doc, 'wivern2-chilbolton.tex', 'wivern2-chilbolton Documentation',
      'UK Research and Innovation', 'manual'),
 ]
 
@@ -162,7 +164,7 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    (master_doc, 'wivern2_chilbolton', 'wivern2_chilbolton Documentation',
+    (master_doc, 'wivern2-chilbolton', 'wivern2-chilbolton Documentation',
      [author], 1)
 ]
 
@@ -173,8 +175,8 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    (master_doc, 'wivern2_chilbolton', 'wivern2_chilbolton Documentation',
-     author, 'wivern2_chilbolton', 'One line description of project.',
+    (master_doc, 'wivern2-chilbolton', 'wivern2-chilbolton Documentation',
+     author, 'wivern2-chilbolton', 'One line description of project.',
      'Miscellaneous'),
 ]
 
