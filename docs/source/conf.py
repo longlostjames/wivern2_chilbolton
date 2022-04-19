@@ -155,7 +155,7 @@ latex_elements = {
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
     (master_doc, 'wivern2-chilbolton.tex', 'Documentation for WIVERN-2 Chilbolton Radar Campaign Data',
-     'Chris Walden \\and UK Research and Innovation \\and National Centre for Atmospheric Science', 'manual'),
+     'Chris Walden, UK Research and Innovation \\and and National Centre for Atmospheric Science', 'manual'),
 ]
 
 
