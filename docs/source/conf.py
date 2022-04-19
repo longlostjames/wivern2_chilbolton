@@ -204,3 +204,5 @@ epub_exclude_files = ['search.html']
 exclude_patterns = ['_temp/*']
 
 autodoc_member_order = 'bysource'
+
+autodoc_mock_imports = ['netCDF4','pyart']
