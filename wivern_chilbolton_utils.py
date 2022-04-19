@@ -600,10 +600,12 @@ def update_galileo_pointing_attributes(l1file):
     # ---------------------------
     DS = nc4.Dataset(l1file,mode='r+',format='NETCDF4')
 
-    DS['azimuth'].long_name   = "azimuth angle from grid north of the plane containing the antenna boresight and zenith vectors"
-    DS['azimuth'].comment     = "assumes transmit and receive antenna boresights are aligned"
-    DS['elevation'].long_name = "elevation angle above the horizon of the antenna boresight"
-    DS['elevation'].comment   = "assumes transmit and receive antenna boresights are aligned"
+    DS['azimuth'].long_name   = "Azimuth angle from grid north of the plane containing the antenna boresight and zenith vectors"
+    DS['azimuth'].comment     = "Assumes transmit and receive antenna boresights are aligned."
+    DS['elevation'].long_name = "Elevation angle above the horizon of the antenna boresight"
+    DS['elevation'].comment   = "Assumes transmit and receive antenna boresights are aligned."
+    DS['azimuth'].comment += "\n" + "Azimuths are specifed to the nearest cardinal, primary or secondary intercardinal compass bearing (i.e. N, NE, NNE etc.). Values are derived from analysis by John Nicol (john@weatherradar.co.nz) of Doppler returns from thin ice at the tops of clouds that have negligible velocity, and measuring the apparent velocity induced by strong winds that change direction over a period of several hours. The speed and direction of the winds at the appropriate height are taken from ECMWF (European Centre for Medium-Range Weather Forecasts) model data."
+    DS['elevation'].comment += "\n" + "Antenna mispointing results in elevations below 90 degrees. Values are derived from analysis by John Nicol (john@weatherradar.co.nz) of Doppler returns from thin ice at the tops of clouds that have negligible velocity, and measuring the apparent velocity induced by strong winds that change direction over a period of several hours. The speed and direction of the winds at the appropriate height are taken from ECMWF (European Centre for Medium-Range Weather Forecasts) model data."
 
     user = getpass.getuser()
 
