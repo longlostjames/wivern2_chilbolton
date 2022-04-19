@@ -205,4 +205,4 @@ exclude_patterns = ['_temp/*']
 
 autodoc_member_order = 'bysource'
 
-autodoc_mock_imports = ['netCDF4','pyart']
+autodoc_mock_imports = ['os', 'getpass','socket','fnmatch','numpy','netCDF4','cftime','datetime','pyart','matplotlib','cmocean']
