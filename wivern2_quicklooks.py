@@ -30,13 +30,23 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 def load_wivern2_l1(file):
 
+    """This routine loads a Level 1 WIVERN-2 I/Q time-series NetCDF file.
+    It then creates pulse-pair estimates of the Doppler velocity and radar
+    equivalent reflectivity factor, annd stores the results in a Python
+    dictionary for further use.  The velocity data may be folded and no attempt
+    at unfolding is made.
+
+    :param file: Full path to Level 1 file
+    :type file: str
+    """
+
     DS = nc4.Dataset(file);
-    
+
     dtime = cftime.num2pydate(DS['time'],DS['time'].units);
-    
+
     I = ma.masked_where(DS['qc_flag'][:,:,:]>2,DS['I'][:,:,:]);
     Q = ma.masked_where(DS['qc_flag'][:,:,:]>2,DS['Q'][:,:,:]);
-    
+
     range_km = DS['range'][:]/1000.;
     altitude_m = DS['altitude'][:];
 
@@ -61,7 +71,7 @@ def load_wivern2_l1(file):
     imag_vh_arr = Q0*Im2-I0*Qm2;
     real_vv_arr = Ip1*Im1+Qp1*Qm1;
     imag_vv_arr = Qp1*Im1-Ip1*Qm1;
-            
+
     real_vh = np.sum(real_vh_arr,axis=1);
     imag_vh = np.sum(imag_vh_arr,axis=1);
     real_vv = np.sum(real_vv_arr,axis=1);
@@ -70,13 +80,13 @@ def load_wivern2_l1(file):
     prf  = DS['prf'][:];
     freq = DS['frequency'][:]*1e9;  # convert Ghz to Hz
     c = 299792458; # m/s
-    wavelength = c/freq;    
+    wavelength = c/freq;
     vf = wavelength*prf/4;  # folding velocity
 
     # Determine pulse-pair velocity
     # -----------------------------
     velpp=ma.arctan2(imag_vh+imag_vv,real_vh+real_vv)*vf/np.pi;
-        
+
     data = dict();
     data['I'] = I;
     data['Q'] = Q;
@@ -86,14 +96,38 @@ def load_wivern2_l1(file):
     data['altitude'] = altitude_m;
     data['datetime'] = dtime;
     data['folding_velocity'] = vf;
-    
+
     DS.close();
-    
+
     return data
 
 
 def create_wivern2_l1_plot(files,figpath,plotfile,dt_min,dt_max,time_alignment='post'):
-        
+
+    """This routine accepts a list of Level 1 WIVERN-2 I/Q time-series files,
+    and generates a composite quicklook plot of radar equivalent reflectivity
+    factor and Doppler velocity.
+
+    :param files: List of files to be processed
+    :type infile: str
+
+    :param figpath: path where quicklook file is to be written
+    :type figpath: str
+
+    :param plotfile: name of quicklook file
+    :type plotfile: str
+
+    :param dt_min:
+    :type dt_min:
+
+    :param dt_max:
+    :type dt_max:
+
+    :param time_alignment: 'post' (default) specifies that times are aligned
+        with the end of each ray; 'pre' specifies that times are aligned with the
+        start of each ray (appropriate for 35 GHz data);
+    """
+
     DS = nc4.Dataset(files[0]);
 
     radar = DS.source;
@@ -106,7 +140,7 @@ def create_wivern2_l1_plot(files,figpath,plotfile,dt_min,dt_max,time_alignment='
     ifile = 1;
     print('{}/{} {}'.format(ifile,nfiles,infile));
 
-    
+
     DS0 = load_wivern2_l1(infile);
 
     vf = DS0['folding_velocity'];
@@ -137,7 +171,7 @@ def create_wivern2_l1_plot(files,figpath,plotfile,dt_min,dt_max,time_alignment='
 
     ax[0].set_ylabel('Altitude (km)');
     ax[1].set_ylabel('Altitude (km)');
-    
+
     gate_width = DS0['range'][1]-DS0['range'][0];
     gate_starts = DS0['range'][:] - gate_width/2.0;
     gate_starts = np.append(gate_starts,DS0['range'][-1]+gate_width/2.0);
@@ -156,7 +190,7 @@ def create_wivern2_l1_plot(files,figpath,plotfile,dt_min,dt_max,time_alignment='
     vel_cmap = plt.cm.get_cmap('RdBu')
     vel_cmap = vel_cmap.reversed()
 
-    h1 = ax[0].pcolor(dt,gate_starts,DS0['Zpp'][:,:].transpose(),vmin=-20,vmax=50,cmap='pyart_HomeyerRainbow'); 
+    h1 = ax[0].pcolor(dt,gate_starts,DS0['Zpp'][:,:].transpose(),vmin=-20,vmax=50,cmap='pyart_HomeyerRainbow');
     cb1 = plt.colorbar(h1,ax=ax[0],orientation='horizontal',shrink=0.8);
     cb1.ax.set_xlabel("Reflectivity Factor (dBZ)");
 
@@ -174,9 +208,9 @@ def create_wivern2_l1_plot(files,figpath,plotfile,dt_min,dt_max,time_alignment='
     ax[1].set_title('{}'.format(dt_min.date()),loc='right')
 
     for file in files[1:]:
-    
+
         ifile = ifile+1;
-    
+
         print('{}/{} {}'.format(ifile,nfiles,file));
 
         DS = nc4.Dataset(file);
@@ -188,7 +222,7 @@ def create_wivern2_l1_plot(files,figpath,plotfile,dt_min,dt_max,time_alignment='
 
         if ((DS_start_last >= dt_min) & (DS_start_first <= dt_max)) | ((DS_end_last >= dt_min) & (DS_end_first <= dt_max)):
             DS0 = load_wivern2_l1(file);
-    
+
             gate_width = DS0['range'][1]-DS0['range'][0];
             gate_starts = DS0['range'][:] - gate_width/2.0;
             gate_starts = np.append(gate_starts,DS0['range'][-1]+gate_width/2.0);
@@ -197,7 +231,7 @@ def create_wivern2_l1_plot(files,figpath,plotfile,dt_min,dt_max,time_alignment='
             timestep = DS0['datetime'][1]-DS0['datetime'][0];
             dt = DS0['datetime'][:];
             dt_pre = DS0['datetime'][0]-timestep;
-            dt_post = DS0['datetime'][-1]+timestep;    
+            dt_post = DS0['datetime'][-1]+timestep;
 
             if time_alignment=='post':
                 dt = np.insert(dt,[0],dt_pre);
@@ -206,7 +240,7 @@ def create_wivern2_l1_plot(files,figpath,plotfile,dt_min,dt_max,time_alignment='
 
             ax[0].pcolor(dt,gate_starts,DS0['Zpp'][:,:].transpose(),vmin=-20,vmax=50,cmap='pyart_HomeyerRainbow');
             ax[1].pcolor(dt,gate_starts,DS0['velpp'][:,:].transpose(),vmin=-vf,vmax=vf,cmap=vel_cmap);
-    
+
 
             ax[0].grid(True);
             ax[1].grid(True);
@@ -216,7 +250,7 @@ def create_wivern2_l1_plot(files,figpath,plotfile,dt_min,dt_max,time_alignment='
 
 
     plt.savefig(os.path.join(figpath,plotfile));
-    
+
     plt.show();
     plt.close();
 
@@ -283,8 +317,8 @@ def make_quicklooks_single(ncas_radar,datestr,basepath,outpath,time_alignment='p
     l1dirs  = [];
 
     for root,dirs,files in os.walk(inpath):
-        l1dirs += [os.path.join(root,d) for d in dirs];        
-    
+        l1dirs += [os.path.join(root,d) for d in dirs];
+
     print(l1dirs);
 
     if l1dirs==[]:
@@ -344,6 +378,25 @@ get_files = lambda path: (os.path.join(root, file) for root, dirs, files in os.w
 
 def make_quicklooks_multi(datestr,basepath,outpath,duration='max'):
 
+    """This routine creates a set of time-height quicklooks for WIVERN-2 campaign
+    data from a given date.  It assumes a ddirectory tree in which any separate
+    events are nested in subdirectories (e.g. EventA, EventB).  The limits of
+    the time axis are set to be common for all radars.
+
+    :param datestr: String reresenting date in the format YYYYmmdd
+    :type datestr: str
+
+    :param basepath: path where individual radar data directory trees are located
+    :type basepath: str
+
+    :param outpath: destination path for quicklooks
+    :type outpath: str
+
+    :param duration: 'max' (default) sets the time limits to the maximum across
+        all radars, 'min' sets the time limits to the common overlap period.
+    :type duration: str
+    """
+
     inpath3  = os.path.join(basepath,'ncas-radar-camra-1','campaign','wivern2','L1',datestr);
     inpath35 = os.path.join(basepath,'ncas-radar-ka-band-1','campaign','wivern2','L1',datestr);
     inpath94 = os.path.join(basepath,'ncas-radar-w-band-1','campaign','wivern2','L1',datestr);
@@ -355,14 +408,14 @@ def make_quicklooks_multi(datestr,basepath,outpath,duration='max'):
     l1dirs94 = [];
 
     for root,dirs,files in os.walk(inpath3):
-        l1dirs3 += [os.path.join(root,d) for d in dirs];        
-    
+        l1dirs3 += [os.path.join(root,d) for d in dirs];
+
     for root,dirs,files in os.walk(inpath35):
         l1dirs35 += [os.path.join(root,d) for d in dirs];
-    
+
     for root,dirs,files in os.walk(inpath94):
         l1dirs94 += [os.path.join(root,d) for d in dirs];
-    
+
     print(l1dirs3);
     print(l1dirs35);
     print(l1dirs94);
@@ -457,7 +510,7 @@ def make_quicklooks_multi(datestr,basepath,outpath,duration='max'):
             print(event);
             d3  = d;
             d35 = os.path.join(inpath35,event);
-            d94 = os.path.join(inpath94,event); 
+            d94 = os.path.join(inpath94,event);
             l1files3  = [os.path.join(inpath3,f) for f in fnmatch.filter(get_files(d3), pattern)];
             l1files35 = [os.path.join(inpath35,f) for f in fnmatch.filter(get_files(d35), pattern)];
             l1files94 = [os.path.join(inpath94,f) for f in fnmatch.filter(get_files(d94), pattern)];
@@ -485,7 +538,7 @@ def make_quicklooks_multi(datestr,basepath,outpath,duration='max'):
                 if duration=='max':
                     dt_end     = max(dt_end,cftime.num2pydate(DS3end['time'][-1],DS3end['time'].units));
                 else:
-                    dt_end     = min(dt_end,cftime.num2pydate(DS3end['time'][-1],DS3end['time'].units)); 
+                    dt_end     = min(dt_end,cftime.num2pydate(DS3end['time'][-1],DS3end['time'].units));
                 DS3start.close();
                 DS3end.close();
 
@@ -536,8 +589,3 @@ def make_quicklooks_multi(datestr,basepath,outpath,duration='max'):
 
 if __name__ == "__main__":
    main(sys.argv[1:])
-
-
-
-
-

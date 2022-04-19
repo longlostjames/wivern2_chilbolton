@@ -1,6 +1,7 @@
 Software description
 ====================
 
+.. _raw-data-conversion:
 
 Raw data conversion
 -------------------
@@ -9,6 +10,8 @@ The 3 GHz, 35 GHz and 94 GHz radars involved in the WIVERN-2 campaign provide
 raw data (designated as Level 0a) in different formats.  For the 3 GHz and
 94 GHz radars the files are in NetCDF-3 format, but with differing content.
 The 35 GHz radar Level 0a data are in binary format.
+
+.. automodule:: wivern_chilbolton_utils
 
 For the 3 GHz radar the Level 0a data are first processed to produce Level 0b
 files.  This is accomplished using the following routine:
@@ -40,15 +43,15 @@ Binary format 35 GHz radar files are converted directly to Level 1 using
 .. _pynco: https://pynco.readthedocs.io/
 
 
+.. _quicklook-generation:
+
 Quicklook generation
 -------------------
 
 CloudnetPy offers an easy-to-use plotting interface:
 
-.. autofunction:: plotting.generate_figure
+.. autofunction:: wivern2_quicklooks.load_wivern2_l1
 
-There is also possibility to compare CloundetPy files with the
-Matlab-processed legacy files
-(tagged "legacy" in the `Cloudnet data portal <https://cloudnet.fmi.fi>`_):
+.. autofunction:: wivern2_quicklooks.create_wivern2_l1_plot
 
-.. autofunction:: plotting.compare_files
+.. autofunction:: wivern2_quicklooks.make_quicklooks_multi

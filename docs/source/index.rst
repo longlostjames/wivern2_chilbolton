@@ -4,11 +4,11 @@
    contain the root `toctree` directive.
 
 ================================
-wivern2_chilbolton documentation
+wivern2-chilbolton documentation
 ================================
 
-Documentation for wivern2_chilbolton, a set of Python routines
-for processing Chilbolton radar data from the WIVERN-2 campaign.
+Documentation for the WIVERN-2 Chilbolton radar campaign.
+
 
 .. toctree::
    :maxdepth: 4
@@ -16,7 +16,7 @@ for processing Chilbolton radar data from the WIVERN-2 campaign.
    overview
    fileformat
    processing_software
-   
+
 
 
 Indices and tables
