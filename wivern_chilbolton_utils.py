@@ -668,6 +668,38 @@ def encode_antenna_mispointing(l1file,elevation_offset,azimuth):
 
     DS.close();
 
+def update_galileo_time_long_name(l1file):
+
+    """This routine updates the long_name for time for 94GHz Galileo radar data.
+
+    :param l1file: Full path of NetCDF Level 1 file, `<path-to-file>/ncas-radar-w-band-1_cao_20201210-212823_fix-ts_l1_v1.0.nc`
+    :type infile: str
+    """
+
+    # ---------------------------
+    # Open NetCDF file for update
+    # ---------------------------
+    DS = nc4.Dataset(l1file,mode='r+',format='NETCDF4')
+
+    DS['time'].long_name   = "time at the end of each recorded ray"
+
+    user = getpass.getuser()
+
+    updttime = datetime.utcnow()
+    updttimestr = updttime.ctime()
+
+    history = updttimestr + (" - user:" + user
+    + " machine: " + socket.gethostname()
+    + " program: wivern_chilbolton_utils.py update_galileo_time_long_name.py"
+    + " version:" + str(module_version));
+
+    print(history);
+
+    DS.history = history + "\n" + DS.history;
+
+    DS.last_revised_date = datetime.strftime(updttime,'%Y-%m-%dT%H:%M:%SZ')
+
+    DS.close();
 
 def encode_dBZ_offset(l1file,dBZ_offset):
 
