@@ -46,7 +46,8 @@ Binary format 35 GHz radar files are converted directly to Level 1 using
 Quicklook generation
 -------------------
 
-CloudnetPy offers an easy-to-use plotting interface:
+The following functions allow the user to generate a set of height-time plots
+directly from the Level 1 time-series data.
 
 .. autofunction:: wivern2_quicklooks.load_wivern2_l1
 

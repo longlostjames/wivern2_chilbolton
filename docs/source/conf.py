@@ -154,7 +154,7 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    (master_doc, 'wivern2-chilbolton.tex', 'Documentation for WIVERN-2 Chilbolton Campaign',
+    (master_doc, 'wivern2-chilbolton.tex', 'Documentation for WIVERN-2 Chilbolton Radar Campaign Data',
      'Chris Walden, UK Research and Innovation', 'manual'),
 ]
 
@@ -205,4 +205,4 @@ exclude_patterns = ['_temp/*']
 
 autodoc_member_order = 'bysource'
 
-autodoc_mock_imports = ['os', 'getpass','socket','fnmatch','numpy','netCDF4','cftime','datetime','pyart','matplotlib','cmocean']
+autodoc_mock_imports = ['os', 'getpass','socket','fnmatch','numpy','netCDF4','cftime','datetime','pyart','matplotlib','cmocean','wivern_chilbolton_utils']
