@@ -154,8 +154,8 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    (master_doc, 'wivern2-chilbolton.tex', 'wivern2-chilbolton Documentation',
-     'UK Research and Innovation', 'manual'),
+    (master_doc, 'wivern2-chilbolton.tex', 'Documentation for WIVERN-2 Chilbolton Campaign',
+     'Chris Walden, UK Research and Innovation', 'manual'),
 ]
 
 

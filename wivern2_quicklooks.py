@@ -117,15 +117,16 @@ def create_wivern2_l1_plot(files,figpath,plotfile,dt_min,dt_max,time_alignment='
     :param plotfile: name of quicklook file
     :type plotfile: str
 
-    :param dt_min:
-    :type dt_min:
+    :param dt_min: lower limit for time axis
+    :type dt_min: python datetime
 
-    :param dt_max:
-    :type dt_max:
+    :param dt_max: upper limit for time axis
+    :type dt_max: python datetime
 
     :param time_alignment: 'post' (default) specifies that times are aligned
         with the end of each ray; 'pre' specifies that times are aligned with the
         start of each ray (appropriate for 35 GHz data);
+    :type time_alignment: str
     """
 
     DS = nc4.Dataset(files[0]);
@@ -379,7 +380,7 @@ get_files = lambda path: (os.path.join(root, file) for root, dirs, files in os.w
 def make_quicklooks_multi(datestr,basepath,outpath,duration='max'):
 
     """This routine creates a set of time-height quicklooks for WIVERN-2 campaign
-    data from a given date.  It assumes a ddirectory tree in which any separate
+    data from a given date.  It assumes a directory tree in which any separate
     events are nested in subdirectories (e.g. EventA, EventB).  The limits of
     the time axis are set to be common for all radars.
 

@@ -40,12 +40,6 @@ plots of radar equivalent reflectivity and of pulse-pair estimates of the
 Doppler velocity.  No velocity unfolding is performed.
 
 
+See also:
 
-..
-  .. note::
-
-    Near real-time Cloudnet data can be accessed at https://cloudnet.fmi.fi.
-
-
-..
-  See also:
+- wivern2-chilbolton source: https://github.com/longlostjames/wivern2_chilbolton

@@ -11,8 +11,6 @@ raw data (designated as Level 0a) in different formats.  For the 3 GHz and
 94 GHz radars the files are in NetCDF-3 format, but with differing content.
 The 35 GHz radar Level 0a data are in binary format.
 
-.. automodule:: wivern_chilbolton_utils
-
 For the 3 GHz radar the Level 0a data are first processed to produce Level 0b
 files.  This is accomplished using the following routine:
 
