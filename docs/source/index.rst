@@ -16,5 +16,3 @@ Documentation for the WIVERN-2 Chilbolton radar campaign.
    overview
    fileformat
    processing_software
-
-* :ref:`genindex`
